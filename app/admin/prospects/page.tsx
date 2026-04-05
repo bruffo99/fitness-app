@@ -50,8 +50,10 @@ export default async function ProspectsPage(props: { searchParams: SearchParams 
     <section className="page">
       <div className="container">
         <div className="page-header">
-          <div className="section__eyebrow">Admin</div>
-          <h1>Prospect pipeline</h1>
+          <div className="page-kicker">Admin pipeline</div>
+          <h1>
+            Prospect <span className="accent">pipeline</span>
+          </h1>
           <p>Review, manage, and convert leads.</p>
         </div>
 
@@ -71,7 +73,7 @@ export default async function ProspectsPage(props: { searchParams: SearchParams 
           })}
         </div>
 
-        <div className="card" style={{ marginTop: "1rem" }}>
+        <div className="admin-panel" style={{ marginTop: "1rem" }}>
           <div className="table-wrap">
             <table>
               <thead>
@@ -87,7 +89,7 @@ export default async function ProspectsPage(props: { searchParams: SearchParams 
               <tbody>
                 {prospects.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="muted">No prospects match this filter.</td>
+                    <td colSpan={6} className="empty-state">No prospects match this filter.</td>
                   </tr>
                 ) : (
                   prospects.map((p: (typeof prospects)[number]) => (

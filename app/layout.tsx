@@ -22,8 +22,10 @@ export default async function RootLayout({
           <header className="site-header">
             <div className="container site-header__inner">
               <Link href="/" className="brand">
-                <span className="brand__title">Ruffo Fitness</span>
-                <span className="brand__tag">Private coaching intake</span>
+                <span className="brand__title">
+                  Ruffo <span className="brand__title-accent">Fitness</span>
+                </span>
+                <span className="brand__tag">Built different. Intake and coaching admin.</span>
               </Link>
               <nav className="site-nav">
                 <Link href="/" className="site-nav__link">

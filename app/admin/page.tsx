@@ -22,21 +22,23 @@ export default async function AdminPage() {
     <section className="page">
       <div className="container">
         <div className="page-header">
-          <div className="section__eyebrow">Admin</div>
-          <h1>Dashboard</h1>
+          <div className="page-kicker">Admin dashboard</div>
+          <h1>
+            Prospect <span className="accent">overview</span>
+          </h1>
           <p>Signed in as {session.email}.</p>
         </div>
 
-        <div className="stats">
-          <div className="stat">
+        <div className="admin-summary">
+          <div className="metric-card">
             <strong>{prospectCount}</strong>
             <span>Total prospects</span>
           </div>
-          <div className="stat">
+          <div className="metric-card">
             <strong>{newLeadCount}</strong>
             <span>New leads</span>
           </div>
-          <div className="stat">
+          <div className="metric-card">
             <strong>{clientCount}</strong>
             <span>Active clients</span>
           </div>
@@ -48,7 +50,7 @@ export default async function AdminPage() {
           </Link>
         </div>
 
-        <div className="card" style={{ marginTop: "1.5rem" }}>
+        <div className="admin-panel" style={{ marginTop: "1.5rem" }}>
           <div className="section__eyebrow">Recent leads</div>
           <div className="table-wrap">
             <table>
@@ -65,7 +67,7 @@ export default async function AdminPage() {
               <tbody>
                 {recentProspects.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="muted">No leads yet.</td>
+                    <td colSpan={6} className="empty-state">No leads yet.</td>
                   </tr>
                 ) : (
                   recentProspects.map((p: (typeof recentProspects)[number]) => (

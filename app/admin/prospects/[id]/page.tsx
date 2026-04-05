@@ -33,13 +33,17 @@ export default async function ProspectDetailPage(props: {
 
   return (
     <section className="page">
-      <div className="container" style={{ maxWidth: "820px" }}>
+      <div className="container" style={{ maxWidth: "920px" }}>
         <div className="page-header">
-          <div className="section__eyebrow">Prospect</div>
-          <h1>{prospect.firstName} {prospect.lastName}</h1>
-          <span className={`badge badge--${statusClass(prospect.status)}`}>
-            {statusLabel(prospect.status)}
-          </span>
+          <div className="page-kicker">Prospect detail</div>
+          <h1>
+            {prospect.firstName} {prospect.lastName}
+          </h1>
+          <div className="page-meta">
+            <span className={`badge badge--${statusClass(prospect.status)}`}>
+              {statusLabel(prospect.status)}
+            </span>
+          </div>
         </div>
 
         {converted && (
@@ -61,7 +65,7 @@ export default async function ProspectDetailPage(props: {
         )}
 
         {/* Lead info */}
-        <div className="card" style={{ marginBottom: "1.25rem" }}>
+        <div className="admin-panel" style={{ marginBottom: "1.25rem" }}>
           <div className="section__eyebrow">Lead info</div>
           <div className="detail-grid">
             <div className="detail-item">
@@ -94,7 +98,7 @@ export default async function ProspectDetailPage(props: {
         </div>
 
         {/* Status */}
-        <div className="card" style={{ marginBottom: "1.25rem" }}>
+        <div className="admin-panel" style={{ marginBottom: "1.25rem" }}>
           <div className="section__eyebrow">Status</div>
           <form action={`/api/admin/prospects/${id}`} method="post" className="form form--inline">
             <input type="hidden" name="_action" value="update_status" />
@@ -113,7 +117,7 @@ export default async function ProspectDetailPage(props: {
         </div>
 
         {/* Notes */}
-        <div className="card" style={{ marginBottom: "1.25rem" }}>
+        <div className="admin-panel" style={{ marginBottom: "1.25rem" }}>
           <div className="section__eyebrow">Coach notes</div>
           <form action={`/api/admin/prospects/${id}`} method="post" className="form">
             <input type="hidden" name="_action" value="update_notes" />
@@ -134,7 +138,7 @@ export default async function ProspectDetailPage(props: {
 
         {/* Convert to client */}
         {prospect.status !== "CLIENT_ACTIVE" && (
-          <div className="card" style={{ marginBottom: "1.25rem" }}>
+          <div className="admin-panel" style={{ marginBottom: "1.25rem" }}>
             <div className="section__eyebrow">Convert to client</div>
             <p className="muted">
               Creates or updates the account for {prospect.email}, builds the client
