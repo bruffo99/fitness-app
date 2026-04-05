@@ -1,0 +1,11 @@
+services:
+  fitness-app:
+    build: .
+    container_name: fitness-app
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - ../.env
+    environment:
+      NODE_ENV: production
+      PORT: 3004
