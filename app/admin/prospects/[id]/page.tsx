@@ -44,7 +44,7 @@ export default async function ProspectDetailPage(props: {
 
         {converted && (
           <div className="feedback" style={{ marginBottom: "1.5rem" }}>
-            Converted to client. A user account has been created for {prospect.email}.
+            Converted to client. Account, client profile, and starting goal record are ready for {prospect.email}.
           </div>
         )}
 
@@ -137,8 +137,9 @@ export default async function ProspectDetailPage(props: {
           <div className="card" style={{ marginBottom: "1.25rem" }}>
             <div className="section__eyebrow">Convert to client</div>
             <p className="muted">
-              Creates a user account for {prospect.email} with the CLIENT role and marks
-              this lead as active.
+              Creates or updates the account for {prospect.email}, builds the client
+              profile, adds the current goal as a starter target, and marks this lead
+              as active.
             </p>
             <form action={`/api/admin/prospects/${id}/convert`} method="post">
               <button type="submit" className="button">

@@ -4,8 +4,8 @@ import "./globals.css";
 import { getAdminSession } from "@/lib/auth";
 
 export const metadata: Metadata = {
-  title: "Ruffo Fitness v2",
-  description: "Phase 1 foundation for a lightweight Ruffo Fitness coaching app."
+  title: "Ruffo Fitness",
+  description: "Private coaching inquiries and client intake for Ruffo Fitness."
 };
 
 export default async function RootLayout({
@@ -22,8 +22,8 @@ export default async function RootLayout({
           <header className="site-header">
             <div className="container site-header__inner">
               <Link href="/" className="brand">
-                <span className="brand__title">Ruffo Fitness v2</span>
-                <span className="brand__tag">Phase 1 coaching app foundation</span>
+                <span className="brand__title">Ruffo Fitness</span>
+                <span className="brand__tag">Private coaching intake</span>
               </Link>
               <nav className="site-nav">
                 <Link href="/" className="site-nav__link">
@@ -49,8 +49,8 @@ export default async function RootLayout({
           <main>{children}</main>
           <footer className="site-footer">
             <div className="container site-footer__inner">
-              <span>Lead capture is active in Phase 1.</span>
-              <span>Check-ins, payments, messaging, scheduling, and AI remain deferred.</span>
+              <span>Coaching inquiries are reviewed before onboarding begins.</span>
+              <span>Scheduling, billing, and check-ins are handled after intake.</span>
             </div>
           </footer>
         </div>

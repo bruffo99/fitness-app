@@ -11,38 +11,38 @@ export default async function HomePage(props: { searchParams: SearchParams }) {
       <section className="hero">
         <div className="container hero__grid">
           <div className="card">
-            <div className="hero__eyebrow">Phase 1</div>
-            <h1>Private coaching, rebuilt on a tighter foundation.</h1>
+            <div className="hero__eyebrow">Online coaching</div>
+            <h1>Simple, practical coaching for people who want a clear next step.</h1>
             <p>
-              Ruffo Fitness v2 starts with a simple intake path and a secure admin
-              foundation. This phase captures new leads, stores the first data models,
-              and creates the base for client onboarding without shipping later-phase
-              features too early.
+              Ruffo Fitness helps new clients start with a short intake instead of a
+              long sales process. Share your goal, a bit of context, and the best way
+              to reach you.
             </p>
             <div className="pill-row">
-              <span className="pill">Lead capture</span>
-              <span className="pill">Admin sign-in</span>
-              <span className="pill">SQLite + Prisma schema</span>
-              <span className="pill">Client scaffolds</span>
+              <span className="pill">1:1 coaching inquiries</span>
+              <span className="pill">Goal-focused intake</span>
+              <span className="pill">Personal follow-up</span>
+              <span className="pill">Simple onboarding</span>
             </div>
           </div>
 
           <div className="card">
-            <div className="section__eyebrow">What exists now</div>
+            <div className="section__eyebrow">What to expect</div>
             <div className="stack">
               <p className="muted">
-                The app is intentionally narrow. It handles early prospect collection,
-                admin access, and starter records for eventual client onboarding.
+                The site is built to start the conversation clearly. You send the
+                basics, Ruffo reviews your inquiry, and qualified leads move into
+                client onboarding from there.
               </p>
               <ul className="list">
-                <li>Prospect intake form that writes to the database</li>
-                <li>Admin login using a signed, `httpOnly` cookie</li>
-                <li>Schema for users, tokens, profiles, targets, and sessions</li>
-                <li>Admin page showing captured leads and basic counts</li>
+                <li>Short intake form for coaching inquiries</li>
+                <li>Space to explain your main goal in your own words</li>
+                <li>Direct follow-up based on your preferred contact method</li>
+                <li>Client setup begins only after the lead is reviewed</li>
               </ul>
               <div className="inline-actions">
                 <Link href="#lead-form" className="button">
-                  Join coaching waitlist
+                  Start your intake
                 </Link>
                 <Link href="/admin" className="button-secondary">
                   Open admin area
@@ -56,11 +56,11 @@ export default async function HomePage(props: { searchParams: SearchParams }) {
       <section className="section">
         <div className="container grid-2">
           <div className="card">
-            <div className="section__eyebrow">Lead capture</div>
-            <h2 id="lead-form">Start with a short intake.</h2>
+            <div className="section__eyebrow">Get started</div>
+            <h2 id="lead-form">Tell Ruffo what you want to work on.</h2>
             <p>
-              This is the only public workflow in Phase 1. It preserves lead capture
-              while the rest of the coaching product is still being staged.
+              This form is for people interested in coaching. It keeps the first step
+              straightforward and gives enough context for a useful follow-up.
             </p>
 
             {status === "success" ? (
@@ -132,16 +132,16 @@ export default async function HomePage(props: { searchParams: SearchParams }) {
           </div>
 
           <div className="card">
-            <div className="section__eyebrow">Deferred by design</div>
-            <h2>What this phase does not build yet.</h2>
+            <div className="section__eyebrow">Before you submit</div>
+            <h2>What happens after the form is sent.</h2>
             <ul className="list">
-              <li>Weekly check-ins and habit reviews</li>
-              <li>Member dashboards beyond the admin foundation</li>
-              <li>Payments, subscriptions, or billing portals</li>
-              <li>Messaging, scheduling, or AI assistant flows</li>
+              <li>Your inquiry is reviewed by the coaching team</li>
+              <li>Follow-up happens by email, phone, or text based on your preference</li>
+              <li>Client records are created only when a lead is accepted</li>
+              <li>Billing, scheduling, and check-ins are handled later in the process</li>
             </ul>
             <p>
-              Those features depend on stable onboarding and account structures first.
+              The goal here is a clean first contact, not an all-in-one member portal.
             </p>
           </div>
         </div>

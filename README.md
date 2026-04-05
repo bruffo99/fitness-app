@@ -1,6 +1,6 @@
-# Ruffo Fitness v2
+# Ruffo Fitness
 
-Working coaching-app prototype in a separate project directory from `/root/projects/fitness-site`.
+Small Next.js app for Ruffo Fitness coaching inquiries, internal lead management, and basic client onboarding records.
 
 ## Stack
 
@@ -9,26 +9,29 @@ Working coaching-app prototype in a separate project directory from `/root/proje
 - SQLite for local development
 - Server-side admin auth using a signed `httpOnly` session cookie
 
-## What This Build Includes
+## What This App Includes
 
-- Public landing page with lead capture form
+- Public homepage with coaching inquiry form
 - Prospect intake persistence through Prisma
-- Initial schema for:
+- Internal admin pages for:
+  - reviewing prospects
+  - updating pipeline status
+  - saving notes
+  - converting accepted prospects into client records
+- Schema for:
   - prospects
   - users
   - admin sessions
   - magic link tokens
   - client profiles
   - client targets
-- Admin sign-in foundation that is stronger than a frontend bearer token:
+- Server-side admin auth:
   - credentials are posted to the server
   - the server creates a signed, `httpOnly` session cookie
   - active sessions are also tracked in the database
-- Minimal admin page showing prospect intake and foundation counts
+- Conversion flow that creates or updates the client `User`, creates a `ClientProfile`, creates a starter `ClientTarget`, and marks the prospect as active
 
 ## Not Implemented Yet
-
-The following are intentionally not implemented yet:
 
 - Weekly check-ins
 - Full client dashboards or member portals
@@ -42,6 +45,8 @@ The following are intentionally not implemented yet:
 - `/` public landing page with lead capture
 - `/admin/login` admin sign-in
 - `/admin` admin overview for prospect and client data
+- `/admin/prospects` prospect pipeline list
+- `/admin/prospects/[id]` prospect detail and conversion view
 - `/api/prospects` POST route for lead capture
 - `/api/admin/login` POST route for admin sign-in
 - `/api/admin/logout` POST route for admin sign-out
@@ -71,6 +76,7 @@ cp .env.example .env
 
 3. Set values in `.env`, especially:
 
+- `DATABASE_URL`
 - `SESSION_SECRET`
 - `ADMIN_BOOTSTRAP_EMAIL`
 - `ADMIN_BOOTSTRAP_PASSWORD`
@@ -93,6 +99,5 @@ Then open `http://localhost:3003`.
 ## Notes
 
 - The first successful admin sign-in using the bootstrap credentials will upsert the initial admin user record.
-- Lead capture, admin login, pipeline management, notes, and prospect conversion are implemented.
-- Prospect conversion currently marks a lead as active and creates a `User` record, but it does not yet create a `ClientProfile`. That should be fixed before calling the client-conversion flow production-ready.
+- Prospect conversion is transactional so the account, client profile, starter target, and prospect status update stay in sync.
 - This repo does not modify `/root/projects/fitness-site`.

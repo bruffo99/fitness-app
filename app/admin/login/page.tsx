@@ -20,8 +20,8 @@ export default async function AdminLoginPage(props: { searchParams: SearchParams
           <div className="section__eyebrow">Admin access</div>
           <h1>Sign in</h1>
           <p>
-            Phase 1 uses a server-issued session cookie. Credentials stay on the
-            server and are not embedded in client-side JavaScript.
+            Use the coaching admin credentials to review inquiries, manage the
+            pipeline, and convert accepted prospects into client records.
           </p>
 
           {error ? (

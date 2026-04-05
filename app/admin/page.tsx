@@ -10,7 +10,7 @@ export default async function AdminPage() {
 
   const [prospectCount, clientCount, newLeadCount, recentProspects] = await Promise.all([
     prisma.prospect.count(),
-    prisma.user.count({ where: { role: "CLIENT" } }),
+    prisma.clientProfile.count(),
     prisma.prospect.count({ where: { status: "NEW_LEAD" } }),
     prisma.prospect.findMany({
       orderBy: { createdAt: "desc" },

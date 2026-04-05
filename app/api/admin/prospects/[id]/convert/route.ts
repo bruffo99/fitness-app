@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+function buildFullName(firstName: string, lastName: string) {
+  return `${firstName} ${lastName}`.trim();
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -25,29 +29,81 @@ export async function POST(
     );
   }
 
-  const existingUser = await prisma.user.findUnique({ where: { email: prospect.email } });
-  if (existingUser) {
-    // Already has a user — just update status
-    await prisma.prospect.update({ where: { id }, data: { status: "CLIENT_ACTIVE" } });
-    return NextResponse.redirect(
-      new URL(`/admin/prospects/${id}?converted=1`, request.url),
-      303
-    );
-  }
+  const fullName = buildFullName(prospect.firstName, prospect.lastName);
 
-  await prisma.$transaction([
-    prisma.user.create({
-      data: {
-        email: prospect.email,
-        role: "CLIENT",
-        firstName: prospect.firstName,
-        lastName: prospect.lastName,
-        phone: prospect.phone,
-        isActive: true
+  await prisma.$transaction(async (tx) => {
+    const existingUser = await tx.user.findUnique({
+      where: { email: prospect.email },
+      include: {
+        clientProfile: {
+          include: {
+            targets: {
+              where: {
+                isActive: true,
+                label: prospect.goalSummary
+              },
+              take: 1
+            }
+          }
+        }
       }
-    }),
-    prisma.prospect.update({ where: { id }, data: { status: "CLIENT_ACTIVE" } })
-  ]);
+    });
+
+    const user = existingUser
+      ? await tx.user.update({
+          where: { id: existingUser.id },
+          data: {
+            firstName: existingUser.firstName ?? prospect.firstName,
+            lastName: existingUser.lastName ?? prospect.lastName,
+            phone: existingUser.phone ?? prospect.phone,
+            isActive: true
+          }
+        })
+      : await tx.user.create({
+          data: {
+            email: prospect.email,
+            role: "CLIENT",
+            firstName: prospect.firstName,
+            lastName: prospect.lastName,
+            phone: prospect.phone,
+            isActive: true
+          }
+        });
+
+    const clientProfile = existingUser?.clientProfile
+      ? await tx.clientProfile.update({
+          where: { id: existingUser.clientProfile.id },
+          data: {
+            fullName: existingUser.clientProfile.fullName ?? fullName
+          }
+        })
+      : await tx.clientProfile.create({
+          data: {
+            userId: user.id,
+            fullName,
+            onboardingStatus: "intake_received"
+          }
+        });
+
+    const hasMatchingTarget =
+      existingUser?.clientProfile?.targets.some((target) => target.label === prospect.goalSummary) ??
+      false;
+
+    if (!hasMatchingTarget) {
+      await tx.clientTarget.create({
+        data: {
+          clientProfileId: clientProfile.id,
+          label: prospect.goalSummary,
+          type: "OTHER"
+        }
+      });
+    }
+
+    await tx.prospect.update({
+      where: { id },
+      data: { status: "CLIENT_ACTIVE" }
+    });
+  });
 
   return NextResponse.redirect(
     new URL(`/admin/prospects/${id}?converted=1`, request.url),
