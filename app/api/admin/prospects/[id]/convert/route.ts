@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { buildAbsoluteUrl } from "@/lib/urls";
 
 function buildFullName(firstName: string, lastName: string) {
   return `${firstName} ${lastName}`.trim();
@@ -13,19 +14,19 @@ export async function POST(
 ) {
   const session = await getAdminSession();
   if (!session) {
-    return NextResponse.redirect(new URL("/admin/login", request.url), 303);
+    return NextResponse.redirect(await buildAbsoluteUrl("/admin/login"), 303);
   }
 
   const { id } = await params;
 
   const prospect = await prisma.prospect.findUnique({ where: { id } });
   if (!prospect) {
-    return NextResponse.redirect(new URL("/admin/prospects", request.url), 303);
+    return NextResponse.redirect(await buildAbsoluteUrl("/admin/prospects"), 303);
   }
 
   if (prospect.status === "CLIENT_ACTIVE") {
     return NextResponse.redirect(
-      new URL(`/admin/prospects/${id}?error=already_converted`, request.url),
+      await buildAbsoluteUrl(`/admin/prospects/${id}?error=already_converted`),
       303
     );
   }
@@ -109,7 +110,7 @@ export async function POST(
   });
 
   return NextResponse.redirect(
-    new URL(`/admin/prospects/${id}?converted=1`, request.url),
+    await buildAbsoluteUrl(`/admin/prospects/${id}?converted=1`),
     303
   );
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { buildAbsoluteUrl } from "@/lib/urls";
 
 export async function POST(request: Request) {
   const formData = await request.formData();
@@ -12,12 +13,12 @@ export async function POST(request: Request) {
   const message = String(formData.get("message") ?? "").trim();
 
   if (!firstName || !lastName || !email || !goalSummary) {
-    return NextResponse.redirect(new URL("/?status=error", request.url), 303);
+    return NextResponse.redirect(await buildAbsoluteUrl("/?status=error"), 303);
   }
 
   const existing = await prisma.prospect.findFirst({ where: { email } });
   if (existing) {
-    return NextResponse.redirect(new URL("/?status=duplicate", request.url), 303);
+    return NextResponse.redirect(await buildAbsoluteUrl("/?status=duplicate"), 303);
   }
 
   try {
@@ -34,8 +35,8 @@ export async function POST(request: Request) {
       }
     });
 
-    return NextResponse.redirect(new URL("/?status=success", request.url), 303);
+    return NextResponse.redirect(await buildAbsoluteUrl("/?status=success"), 303);
   } catch {
-    return NextResponse.redirect(new URL("/?status=error", request.url), 303);
+    return NextResponse.redirect(await buildAbsoluteUrl("/?status=error"), 303);
   }
 }

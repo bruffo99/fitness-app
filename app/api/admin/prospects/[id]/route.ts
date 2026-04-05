@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { buildAbsoluteUrl } from "@/lib/urls";
 
 const VALID_STATUSES = [
   "NEW_LEAD",
@@ -23,7 +24,7 @@ export async function POST(
 ) {
   const session = await getAdminSession();
   if (!session) {
-    return NextResponse.redirect(new URL("/admin/login", request.url), 303);
+    return NextResponse.redirect(await buildAbsoluteUrl("/admin/login"), 303);
   }
 
   const { id } = await params;
@@ -32,14 +33,14 @@ export async function POST(
 
   const prospect = await prisma.prospect.findUnique({ where: { id } });
   if (!prospect) {
-    return NextResponse.redirect(new URL("/admin/prospects", request.url), 303);
+    return NextResponse.redirect(await buildAbsoluteUrl("/admin/prospects"), 303);
   }
 
   if (action === "update_status") {
     const status = String(formData.get("status") ?? "");
     if (!isValidStatus(status)) {
       return NextResponse.redirect(
-        new URL(`/admin/prospects/${id}?error=invalid_status`, request.url),
+        await buildAbsoluteUrl(`/admin/prospects/${id}?error=invalid_status`),
         303
       );
     }
@@ -49,5 +50,5 @@ export async function POST(
     await prisma.prospect.update({ where: { id }, data: { notes: notes || null } });
   }
 
-  return NextResponse.redirect(new URL(`/admin/prospects/${id}`, request.url), 303);
+  return NextResponse.redirect(await buildAbsoluteUrl(`/admin/prospects/${id}`), 303);
 }
