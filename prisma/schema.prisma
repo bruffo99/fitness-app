@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  CLIENT
+}
+
+enum ProspectStatus {
+  NEW_LEAD
+  CONTACTED
+  QUALIFIED
+  CLIENT_ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum TargetType {
+  WEIGHT
+  BODY_FAT
+  PERFORMANCE
+  HABIT
+  OTHER
+}
+
+model Prospect {
+  id               String         @id @default(cuid())
+  firstName        String
+  lastName         String
+  email            String
+  phone            String?
+  goalSummary      String
+  preferredContact String?
+  message          String?
+  notes            String?
+  source           String?
+  status           ProspectStatus @default(NEW_LEAD)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([email])
+  @@index([status])
+}
+
+model User {
+  id             String           @id @default(cuid())
+  email          String           @unique
+  role           UserRole         @default(CLIENT)
+  firstName      String?
+  lastName       String?
+  phone          String?
+  isActive       Boolean          @default(true)
+  lastLoginAt    DateTime?
+  passwordHash   String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  adminSessions  AdminSession[]
+  magicLinks     MagicLinkToken[]
+  clientProfile  ClientProfile?
+}
+
+model AdminSession {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model MagicLinkToken {
+  id         String   @id @default(cuid())
+  userId     String?
+  email      String
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+model ClientProfile {
+  id                String         @id @default(cuid())
+  userId            String         @unique
+  fullName          String?
+  onboardingStatus  String         @default("draft")
+  trainingHistory   String?
+  nutritionNotes    String?
+  injuryNotes       String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targets           ClientTarget[]
+}
+
+model ClientTarget {
+  id              String        @id @default(cuid())
+  clientProfileId String
+  type            TargetType    @default(OTHER)
+  label           String
+  targetValue     String?
+  targetDate      DateTime?
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  clientProfile   ClientProfile @relation(fields: [clientProfileId], references: [id], onDelete: Cascade)
+
+  @@index([clientProfileId])
+  @@index([type])
+  @@index([isActive])
+}
