@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendProspectEmails } from "@/lib/mail";
 import { buildAbsoluteUrl } from "@/lib/urls";
 
 export async function POST(request: Request) {
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    await prisma.prospect.create({
+    const prospect = await prisma.prospect.create({
       data: {
         firstName,
         lastName,
@@ -34,6 +35,16 @@ export async function POST(request: Request) {
         source: "website"
       }
     });
+
+    after(() => sendProspectEmails({
+      firstName: prospect.firstName,
+      lastName: prospect.lastName,
+      email: prospect.email,
+      phone: prospect.phone,
+      goalSummary: prospect.goalSummary,
+      preferredContact: prospect.preferredContact,
+      message: prospect.message,
+    }));
 
     return NextResponse.redirect(await buildAbsoluteUrl("/?status=success"), 303);
   } catch {

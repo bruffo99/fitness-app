@@ -13,6 +13,9 @@ Small Next.js app for Ruffo Fitness coaching inquiries, internal lead management
 
 - Public homepage with coaching inquiry form
 - Prospect intake persistence through Prisma
+- Best-effort lead emails after a successful inquiry save:
+  - welcome/confirmation email to the prospect
+  - notification email to the owner or admin
 - Internal admin pages for:
   - reviewing prospects
   - updating pipeline status
@@ -80,6 +83,10 @@ cp .env.example .env
 - `SESSION_SECRET`
 - `ADMIN_BOOTSTRAP_EMAIL`
 - `ADMIN_BOOTSTRAP_PASSWORD`
+- `PUBLIC_APP_URL`
+- `GMAIL_USER`
+- `GMAIL_APP_PASSWORD`
+- `PROSPECT_NOTIFICATION_EMAIL`
 
 4. Create the database and Prisma client:
 
@@ -100,4 +107,6 @@ Then open `http://localhost:3003`.
 
 - The first successful admin sign-in using the bootstrap credentials will upsert the initial admin user record.
 - Prospect conversion is transactional so the account, client profile, starter target, and prospect status update stay in sync.
+- Prospect email sending is best-effort. If Gmail credentials are missing or email delivery fails, the prospect is still saved and the form still redirects with success.
+- Gmail sending follows the old app pattern and expects an app password, not your normal Gmail password.
 - This repo does not modify `/root/projects/fitness-site`.
