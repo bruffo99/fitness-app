@@ -68,7 +68,7 @@ export default async function AdminPage() {
                     <td colSpan={6} className="muted">No leads yet.</td>
                   </tr>
                 ) : (
-                  recentProspects.map((p) => (
+                  recentProspects.map((p: (typeof recentProspects)[number]) => (
                     <tr key={p.id}>
                       <td>{p.firstName} {p.lastName}</td>
                       <td>{p.email}</td>

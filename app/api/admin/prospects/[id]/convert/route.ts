@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -31,7 +32,7 @@ export async function POST(
 
   const fullName = buildFullName(prospect.firstName, prospect.lastName);
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const existingUser = await tx.user.findUnique({
       where: { email: prospect.email },
       include: {
@@ -86,7 +87,9 @@ export async function POST(
         });
 
     const hasMatchingTarget =
-      existingUser?.clientProfile?.targets.some((target) => target.label === prospect.goalSummary) ??
+      existingUser?.clientProfile?.targets.some(
+        (target: { label: string }) => target.label === prospect.goalSummary
+      ) ??
       false;
 
     if (!hasMatchingTarget) {

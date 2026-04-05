@@ -2,10 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatDate, statusLabel, statusClass } from "@/lib/utils";
-import type { ProspectStatus } from "@prisma/client";
+import {
+  formatDate,
+  statusLabel,
+  statusClass,
+  type ProspectStatusValue
+} from "@/lib/utils";
 
-const STATUS_FILTERS: Array<{ value: ProspectStatus | "ALL"; label: string }> = [
+const STATUS_FILTERS: Array<{ value: ProspectStatusValue | "ALL"; label: string }> = [
   { value: "ALL", label: "All" },
   { value: "NEW_LEAD", label: "New" },
   { value: "CONTACTED", label: "Contacted" },
@@ -24,7 +28,7 @@ export default async function ProspectsPage(props: { searchParams: SearchParams 
   const searchParams = await props.searchParams;
   const filter = typeof searchParams.status === "string" ? searchParams.status : "ALL";
 
-  const where = filter !== "ALL" ? { status: filter as ProspectStatus } : {};
+  const where = filter !== "ALL" ? { status: filter as ProspectStatusValue } : {};
 
   const [prospects, counts] = await Promise.all([
     prisma.prospect.findMany({
@@ -37,8 +41,10 @@ export default async function ProspectsPage(props: { searchParams: SearchParams 
     })
   ]);
 
-  const countMap = Object.fromEntries(counts.map((c) => [c.status, c._count.status]));
-  const total = Object.values(countMap).reduce((a, b) => a + b, 0);
+  const countMap = Object.fromEntries(
+    counts.map((c: (typeof counts)[number]) => [c.status, c._count.status])
+  ) as Partial<Record<ProspectStatusValue, number>>;
+  const total = Object.values(countMap).reduce((a, b) => a + (b ?? 0), 0);
 
   return (
     <section className="page">
@@ -84,7 +90,7 @@ export default async function ProspectsPage(props: { searchParams: SearchParams 
                     <td colSpan={6} className="muted">No prospects match this filter.</td>
                   </tr>
                 ) : (
-                  prospects.map((p) => (
+                  prospects.map((p: (typeof prospects)[number]) => (
                     <tr key={p.id}>
                       <td>{p.firstName} {p.lastName}</td>
                       <td>{p.email}</td>

@@ -1,4 +1,10 @@
-import type { ProspectStatus } from "@prisma/client";
+export type ProspectStatusValue =
+  | "NEW_LEAD"
+  | "CONTACTED"
+  | "QUALIFIED"
+  | "CLIENT_ACTIVE"
+  | "INACTIVE"
+  | "ARCHIVED";
 
 export function formatDate(value: Date) {
   return new Intl.DateTimeFormat("en-US", {
@@ -8,7 +14,7 @@ export function formatDate(value: Date) {
   }).format(value);
 }
 
-export function statusLabel(status: ProspectStatus): string {
+export function statusLabel(status: ProspectStatusValue): string {
   switch (status) {
     case "NEW_LEAD":      return "New lead";
     case "CONTACTED":     return "Contacted";
@@ -19,7 +25,7 @@ export function statusLabel(status: ProspectStatus): string {
   }
 }
 
-export function statusClass(status: ProspectStatus): string {
+export function statusClass(status: ProspectStatusValue): string {
   switch (status) {
     case "NEW_LEAD":      return "new";
     case "CONTACTED":     return "contacted";
