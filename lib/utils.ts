@@ -14,6 +14,16 @@ export function formatDate(value: Date) {
   }).format(value);
 }
 
+export function formatDateTime(value: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(value);
+}
+
 export function statusLabel(status: ProspectStatusValue): string {
   switch (status) {
     case "NEW_LEAD":      return "New lead";

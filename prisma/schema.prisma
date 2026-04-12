@@ -36,9 +36,15 @@ model Prospect {
   email            String
   phone            String?
   goalSummary      String
+  goalType         String?
+  fitnessLevel     String?
+  timeline         String?
+  injuries         String?
   preferredContact String?
+  referralSource   String?
   message          String?
-  notes            String?
+  followUpDate     DateTime?
+  notes            ProspectNote[]
   source           String?
   status           ProspectStatus @default(NEW_LEAD)
   createdAt        DateTime       @default(now())
@@ -46,6 +52,18 @@ model Prospect {
 
   @@index([email])
   @@index([status])
+  @@index([followUpDate])
+}
+
+model ProspectNote {
+  id         String   @id @default(cuid())
+  prospectId String
+  body       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  prospect   Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+
+  @@index([prospectId, createdAt])
 }
 
 model User {

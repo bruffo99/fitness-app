@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getAdminSession } from "@/lib/auth";
+import { createStatusChangeNote } from "@/lib/prospect-notes";
 import { prisma } from "@/lib/prisma";
-import { buildAbsoluteUrl } from "@/lib/urls";
 
 const VALID_STATUSES = [
   "NEW_LEAD",
@@ -9,13 +10,46 @@ const VALID_STATUSES = [
   "QUALIFIED",
   "CLIENT_ACTIVE",
   "INACTIVE",
-  "ARCHIVED"
+  "ARCHIVED",
 ] as const;
 
-type ProspectStatus = (typeof VALID_STATUSES)[number];
+const updateStatusSchema = z.object({
+  action: z.literal("update_status"),
+  status: z.enum(VALID_STATUSES),
+});
 
-function isValidStatus(value: string): value is ProspectStatus {
-  return (VALID_STATUSES as readonly string[]).includes(value);
+const addNoteSchema = z.object({
+  action: z.literal("add_note"),
+  note: z.string().trim().min(1).max(10000),
+});
+
+const deleteNoteSchema = z.object({
+  action: z.literal("delete_note"),
+  noteId: z.string().cuid(),
+});
+
+const setFollowUpDateSchema = z.object({
+  action: z.literal("set_followup_date"),
+  date: z.string().nullable(),
+});
+
+const bodySchema = z.discriminatedUnion("action", [
+  updateStatusSchema,
+  addNoteSchema,
+  deleteNoteSchema,
+  setFollowUpDateSchema,
+]);
+
+function unauthorized() {
+  return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+}
+
+function notFound() {
+  return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
+}
+
+function badRequest(error: string) {
+  return NextResponse.json({ ok: false, error }, { status: 400 });
 }
 
 export async function POST(
@@ -23,32 +57,61 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getAdminSession();
-  if (!session) {
-    return NextResponse.redirect(await buildAbsoluteUrl("/admin/login"), 303);
-  }
+  if (!session) return unauthorized();
 
   const { id } = await params;
-  const formData = await request.formData();
-  const action = String(formData.get("_action") ?? "");
+
+  let raw: unknown;
+  try {
+    raw = await request.json();
+  } catch {
+    return badRequest("invalid_json");
+  }
+
+  const parsed = bodySchema.safeParse(raw);
+  if (!parsed.success) return badRequest("invalid_payload");
 
   const prospect = await prisma.prospect.findUnique({ where: { id } });
-  if (!prospect) {
-    return NextResponse.redirect(await buildAbsoluteUrl("/admin/prospects"), 303);
-  }
+  if (!prospect) return notFound();
 
-  if (action === "update_status") {
-    const status = String(formData.get("status") ?? "");
-    if (!isValidStatus(status)) {
-      return NextResponse.redirect(
-        await buildAbsoluteUrl(`/admin/prospects/${id}?error=invalid_status`),
-        303
-      );
+  const body = parsed.data;
+
+  if (body.action === "update_status") {
+    if (prospect.status !== body.status) {
+      await prisma.$transaction([
+        prisma.prospect.update({ where: { id }, data: { status: body.status } }),
+        createStatusChangeNote(prisma, id, body.status),
+      ]);
     }
-    await prisma.prospect.update({ where: { id }, data: { status } });
-  } else if (action === "update_notes") {
-    const notes = String(formData.get("notes") ?? "").trim();
-    await prisma.prospect.update({ where: { id }, data: { notes: notes || null } });
+    const updated = await prisma.prospect.findUnique({
+      where: { id },
+      include: { notes: { orderBy: { createdAt: "desc" } } },
+    });
+    return NextResponse.json({ ok: true, prospect: updated });
   }
 
-  return NextResponse.redirect(await buildAbsoluteUrl(`/admin/prospects/${id}`), 303);
+  if (body.action === "add_note") {
+    const note = await prisma.prospectNote.create({
+      data: { prospectId: id, body: body.note },
+    });
+    return NextResponse.json({ ok: true, note });
+  }
+
+  if (body.action === "delete_note") {
+    await prisma.prospectNote.deleteMany({
+      where: { id: body.noteId, prospectId: id },
+    });
+    return NextResponse.json({ ok: true, deletedNoteId: body.noteId });
+  }
+
+  if (body.action === "set_followup_date") {
+    const followUpDate = body.date ? new Date(body.date) : null;
+    await prisma.prospect.update({
+      where: { id },
+      data: { followUpDate },
+    });
+    return NextResponse.json({ ok: true, followUpDate: followUpDate?.toISOString() ?? null });
+  }
+
+  return badRequest("unknown_action");
 }

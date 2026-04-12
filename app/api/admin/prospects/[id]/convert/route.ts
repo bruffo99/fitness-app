@@ -1,33 +1,33 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, TargetType } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { buildAbsoluteUrl } from "@/lib/urls";
+import { createStatusChangeNote } from "@/lib/prospect-notes";
 
 function buildFullName(firstName: string, lastName: string) {
   return `${firstName} ${lastName}`.trim();
 }
 
 export async function POST(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getAdminSession();
   if (!session) {
-    return NextResponse.redirect(await buildAbsoluteUrl("/admin/login"), 303);
+    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
   const { id } = await params;
 
   const prospect = await prisma.prospect.findUnique({ where: { id } });
   if (!prospect) {
-    return NextResponse.redirect(await buildAbsoluteUrl("/admin/prospects"), 303);
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   if (prospect.status === "CLIENT_ACTIVE") {
-    return NextResponse.redirect(
-      await buildAbsoluteUrl(`/admin/prospects/${id}?error=already_converted`),
-      303
+    return NextResponse.json(
+      { ok: false, error: "already_converted" },
+      { status: 409 }
     );
   }
 
@@ -40,15 +40,12 @@ export async function POST(
         clientProfile: {
           include: {
             targets: {
-              where: {
-                isActive: true,
-                label: prospect.goalSummary
-              },
-              take: 1
-            }
-          }
-        }
-      }
+              where: { isActive: true, label: prospect.goalSummary },
+              take: 1,
+            },
+          },
+        },
+      },
     });
 
     const user = existingUser
@@ -58,8 +55,8 @@ export async function POST(
             firstName: existingUser.firstName ?? prospect.firstName,
             lastName: existingUser.lastName ?? prospect.lastName,
             phone: existingUser.phone ?? prospect.phone,
-            isActive: true
-          }
+            isActive: true,
+          },
         })
       : await tx.user.create({
           data: {
@@ -68,49 +65,58 @@ export async function POST(
             firstName: prospect.firstName,
             lastName: prospect.lastName,
             phone: prospect.phone,
-            isActive: true
-          }
+            isActive: true,
+          },
         });
 
     const clientProfile = existingUser?.clientProfile
       ? await tx.clientProfile.update({
           where: { id: existingUser.clientProfile.id },
-          data: {
-            fullName: existingUser.clientProfile.fullName ?? fullName
-          }
+          data: { fullName: existingUser.clientProfile.fullName ?? fullName },
         })
       : await tx.clientProfile.create({
           data: {
             userId: user.id,
             fullName,
-            onboardingStatus: "intake_received"
-          }
+            onboardingStatus: "intake_received",
+          },
         });
 
     const hasMatchingTarget =
       existingUser?.clientProfile?.targets.some(
         (target: { label: string }) => target.label === prospect.goalSummary
-      ) ??
-      false;
+      ) ?? false;
 
     if (!hasMatchingTarget) {
+      const goalTypeMap: Record<string, TargetType> = {
+        fat_loss: TargetType.BODY_FAT,
+        muscle_gain: TargetType.WEIGHT,
+        body_recomp: TargetType.BODY_FAT,
+        performance: TargetType.PERFORMANCE,
+        general_health: TargetType.HABIT,
+      };
+      const targetType = prospect.goalType ? (goalTypeMap[prospect.goalType] ?? TargetType.OTHER) : TargetType.OTHER;
       await tx.clientTarget.create({
         data: {
           clientProfileId: clientProfile.id,
           label: prospect.goalSummary,
-          type: "OTHER"
-        }
+          type: targetType,
+        },
       });
     }
 
     await tx.prospect.update({
       where: { id },
-      data: { status: "CLIENT_ACTIVE" }
+      data: { status: "CLIENT_ACTIVE" },
     });
+
+    await createStatusChangeNote(tx, id, "CLIENT_ACTIVE");
   });
 
-  return NextResponse.redirect(
-    await buildAbsoluteUrl(`/admin/prospects/${id}?converted=1`),
-    303
-  );
+  const updated = await prisma.prospect.findUnique({
+    where: { id },
+    include: { notes: { orderBy: { createdAt: "desc" } } },
+  });
+
+  return NextResponse.json({ ok: true, prospect: updated });
 }

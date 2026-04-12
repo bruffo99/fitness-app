@@ -44,26 +44,29 @@ function getMailConfig() {
     bridgeToken,
     ownerName: process.env.OWNER_NAME?.trim() || "Brian Ruffo",
     businessName: process.env.BUSINESS_NAME?.trim() || "Ruffo Fitness",
-    replyTo: process.env.GMAIL_USER?.trim() || process.env.ADMIN_BOOTSTRAP_EMAIL?.trim() || undefined,
+    replyTo:
+      process.env.GMAIL_USER?.trim() ??
+      process.env.ADMIN_BOOTSTRAP_EMAIL?.trim() ??
+      undefined,
   };
 }
 
-async function buildMessages(payload: ProspectEmailPayload): Promise<BridgeMessage[]> {
+async function buildMessages(
+  payload: ProspectEmailPayload
+): Promise<BridgeMessage[]> {
   const config = getMailConfig();
-  if (!config) {
-    return [];
-  }
+  if (!config) return [];
 
-  const safeFirstName = escapeHtml(payload.firstName);
-  const safeLastName = escapeHtml(payload.lastName);
-  const safeEmail = escapeHtml(payload.email);
-  const safePhone = escapeHtml(payload.phone ?? "—");
-  const safeGoalSummary = escapeHtml(payload.goalSummary);
+  const safeFirstName        = escapeHtml(payload.firstName);
+  const safeLastName         = escapeHtml(payload.lastName);
+  const safeEmail            = escapeHtml(payload.email);
+  const safePhone            = escapeHtml(payload.phone ?? "—");
+  const safeGoalSummary      = escapeHtml(payload.goalSummary);
   const safePreferredContact = escapeHtml(payload.preferredContact ?? "—");
-  const safeMessage = escapeHtml(payload.message ?? "—");
-  const safeBusinessName = escapeHtml(config.businessName);
-  const safeOwnerName = escapeHtml(config.ownerName);
-  const appUrl = escapeHtml(await getBaseUrl());
+  const safeMessage          = escapeHtml(payload.message ?? "—");
+  const safeBusinessName     = escapeHtml(config.businessName);
+  const safeOwnerName        = escapeHtml(config.ownerName);
+  const appUrl               = escapeHtml(await getBaseUrl());
 
   return [
     {
@@ -117,32 +120,56 @@ async function buildMessages(payload: ProspectEmailPayload): Promise<BridgeMessa
   ];
 }
 
-export async function sendProspectEmails(payload: ProspectEmailPayload) {
-  const config = getMailConfig();
-  if (!config) {
-    return;
-  }
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 1000;
 
-  const messages = await buildMessages(payload);
-  if (messages.length === 0) {
-    return;
-  }
-
+async function sendWithRetry(
+  url: string,
+  token: string,
+  messages: BridgeMessage[],
+  attempt = 1
+): Promise<void> {
   try {
-    const response = await fetch(`${config.bridgeUrl.replace(/\/$/, "")}/send`, {
+    const response = await fetch(`${url.replace(/\/$/, "")}/send`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-bridge-token": config.bridgeToken,
+        "x-bridge-token": token,
       },
       body: JSON.stringify({ messages }),
     });
 
     if (!response.ok) {
       const text = await response.text();
-      console.error("Mail bridge request failed:", response.status, text);
+      throw new Error(`Mail bridge responded ${response.status}: ${text}`);
     }
   } catch (error) {
-    console.error("Mail bridge request failed:", error);
+    if (attempt < MAX_RETRIES) {
+      console.warn(
+        `[mail] Attempt ${attempt}/${MAX_RETRIES} failed — retrying in ${RETRY_DELAY_MS * attempt}ms`,
+        error
+      );
+      await new Promise((r) => setTimeout(r, RETRY_DELAY_MS * attempt));
+      return sendWithRetry(url, token, messages, attempt + 1);
+    }
+
+    // All retries exhausted — log clearly so it can be monitored
+    console.error(
+      `[mail] All ${MAX_RETRIES} attempts failed for messages to [${messages.map((m) => m.to).join(", ")}]`,
+      error
+    );
   }
+}
+
+export async function sendProspectEmails(payload: ProspectEmailPayload) {
+  const config = getMailConfig();
+  if (!config) {
+    console.warn("[mail] Mail not configured — skipping send.");
+    return;
+  }
+
+  const messages = await buildMessages(payload);
+  if (messages.length === 0) return;
+
+  await sendWithRetry(config.bridgeUrl, config.bridgeToken, messages);
 }
