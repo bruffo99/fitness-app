@@ -53,6 +53,7 @@ export default async function PortalGymPage() {
         <GymPhotoClient
           initialPhotos={photos.map((photo) => ({
             ...photo,
+            filePath: `/api/gym-photos/file/${photo.id}`,
             createdAt: photo.createdAt.toISOString(),
           }))}
         />
