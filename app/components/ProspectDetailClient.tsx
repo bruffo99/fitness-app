@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import type { Route } from "next";
+import { useEffect, useState, useTransition } from "react";
 import { StatusBadge } from "@/app/components/StatusBadge";
 import { useToast } from "@/app/components/Toast";
+import { onboardingStatusLabel } from "@/lib/onboarding";
 import {
   formatDate,
   formatDateTime,
@@ -43,6 +45,11 @@ export type ProspectDetailDTO = {
   followUpDate: string | null;
   status: ProspectStatusValue;
   createdAt: string;
+  clientUserId: string | null;
+  onboardingStatus: string | null;
+  onboardingStatusLabel: string;
+  documentsHref: string | null;
+  photosHref: string | null;
   notes: ProspectNote[];
 };
 
@@ -86,6 +93,10 @@ export function ProspectDetailClient({ initial }: { initial: ProspectDetailDTO }
   );
   const [pending, startTransition] = useTransition();
   const { showToast } = useToast();
+
+  useEffect(() => {
+    setFollowUpDraft(prospect.followUpDate ? prospect.followUpDate.split("T")[0] : "");
+  }, [prospect.followUpDate]);
 
   async function postAction(body: unknown) {
     const res = await fetch(`/api/admin/prospects/${prospect.id}`, {
@@ -169,22 +180,6 @@ export function ProspectDetailClient({ initial }: { initial: ProspectDetailDTO }
       } catch (err) {
         setProspect(previous);
         showToast(`Failed to delete note: ${(err as Error).message}`, "error");
-      }
-    });
-  }
-
-  function handleSetFollowUpDate(e: React.FormEvent) {
-    e.preventDefault();
-    startTransition(async () => {
-      try {
-        const res = await postAction({
-          action: "set_followup_date",
-          date: followUpDraft || null,
-        });
-        setProspect((p) => ({ ...p, followUpDate: res.followUpDate ?? null }));
-        showToast(followUpDraft ? `Follow-up set for ${followUpDraft}` : "Follow-up date cleared");
-      } catch (err) {
-        showToast(`Failed to save follow-up date: ${(err as Error).message}`, "error");
       }
     });
   }
@@ -315,8 +310,12 @@ export function ProspectDetailClient({ initial }: { initial: ProspectDetailDTO }
 
         {/* Follow-up date */}
         <div className="admin-panel" style={{ marginBottom: "1.25rem" }}>
-          <div className="section__eyebrow">Follow-up date</div>
-          <form onSubmit={handleSetFollowUpDate} className="form form--inline">
+          <div className="section__eyebrow">Set follow-up date</div>
+          <form
+            action={`/api/admin/prospects/${prospect.id}/followup`}
+            method="post"
+            className="form form--inline"
+          >
             <div className="field" style={{ flex: 1 }}>
               <label htmlFor="followUpDate">
                 {prospect.followUpDate
@@ -325,6 +324,7 @@ export function ProspectDetailClient({ initial }: { initial: ProspectDetailDTO }
               </label>
               <input
                 id="followUpDate"
+                name="date"
                 type="date"
                 value={followUpDraft}
                 onChange={(e) => setFollowUpDraft(e.target.value)}
@@ -334,11 +334,23 @@ export function ProspectDetailClient({ initial }: { initial: ProspectDetailDTO }
             <button
               type="submit"
               className="button form--inline__submit"
-              disabled={pending}
+              disabled={pending || !followUpDraft}
             >
-              {pending ? "Saving…" : followUpDraft ? "Set date" : "Clear"}
+              Set date
             </button>
           </form>
+          {prospect.followUpDate ? (
+            <form
+              action={`/api/admin/prospects/${prospect.id}/followup`}
+              method="post"
+              className="inline-actions"
+            >
+              <input type="hidden" name="date" value="" />
+              <button type="submit" className="button-secondary">
+                Clear
+              </button>
+            </form>
+          ) : null}
         </div>
 
         {/* Notes */}
@@ -416,6 +428,62 @@ export function ProspectDetailClient({ initial }: { initial: ProspectDetailDTO }
           </div>
         )}
 
+        {prospect.status === "CLIENT_ACTIVE" && (
+          <div className="admin-panel" style={{ marginBottom: "1.25rem" }}>
+            <div className="section__eyebrow">Onboarding</div>
+            <div className="stack">
+              <div>
+                <p className="muted">Current status</p>
+                <strong>{prospect.onboardingStatusLabel}</strong>
+              </div>
+
+              {prospect.clientUserId ? (
+                <div className="inline-actions">
+                  <form
+                    action={`/api/admin/onboarding/${prospect.clientUserId}/send`}
+                    method="post"
+                  >
+                    <button
+                      type="submit"
+                      className="button"
+                      disabled={pending || prospect.onboardingStatus === "active"}
+                    >
+                      Send Onboarding Intake
+                    </button>
+                  </form>
+
+                  {prospect.onboardingStatus === "intake_complete" ? (
+                    <form
+                      action={`/api/admin/onboarding/${prospect.clientUserId}/activate`}
+                      method="post"
+                    >
+                      <button type="submit" className="button-secondary" disabled={pending}>
+                        Activate Client
+                      </button>
+                    </form>
+                  ) : null}
+
+                  {prospect.documentsHref ? (
+                    <Link href={prospect.documentsHref as Route} className="button-secondary">
+                      Manage client documents
+                    </Link>
+                  ) : null}
+
+                  {prospect.photosHref ? (
+                    <Link href={prospect.photosHref as Route} className="button-secondary">
+                      Gym photos
+                    </Link>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="muted">
+                  Client account not found for this email yet.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="inline-actions">
           <Link href="/admin/prospects" className="button-secondary">
             Back to pipeline
@@ -443,6 +511,11 @@ function serializeProspect(p: {
   followUpDate?: string | Date | null;
   status: ProspectStatusValue;
   createdAt: string | Date;
+  clientUserId?: string | null;
+  onboardingStatus?: string | null;
+  onboardingStatusLabel?: string | null;
+  documentsHref?: string | null;
+  photosHref?: string | null;
   notes: { id: string; body: string; createdAt: string | Date }[];
 }): ProspectDetailDTO {
   return {
@@ -464,6 +537,11 @@ function serializeProspect(p: {
       : null,
     status: p.status,
     createdAt: typeof p.createdAt === "string" ? p.createdAt : p.createdAt.toISOString(),
+    clientUserId: p.clientUserId ?? null,
+    onboardingStatus: p.onboardingStatus ?? null,
+    onboardingStatusLabel: p.onboardingStatusLabel ?? onboardingStatusLabel(p.onboardingStatus),
+    documentsHref: p.documentsHref ?? null,
+    photosHref: p.photosHref ?? null,
     notes: p.notes.map((n) => ({
       id: n.id,
       body: n.body,

@@ -9,6 +9,7 @@ import type { NextRequest } from "next/server";
  */
 
 const SESSION_COOKIE = "ruffo_admin_session";
+const CLIENT_SESSION_COOKIE = "client_session";
 const PUBLIC_ADMIN_PATHS = ["/admin/login"];
 
 function base64urlDecode(str: string): string {
@@ -40,7 +41,17 @@ function hasValidSession(cookieValue: string): boolean {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Only guard /admin routes
+  if (pathname.startsWith("/portal")) {
+    const isPublicPortalPath =
+      pathname.startsWith("/portal/login") || pathname.startsWith("/portal/auth");
+
+    if (!isPublicPortalPath && !request.cookies.get(CLIENT_SESSION_COOKIE)?.value) {
+      return NextResponse.redirect(new URL("/portal/login", request.url));
+    }
+
+    return NextResponse.next();
+  }
+
   if (!pathname.startsWith("/admin")) return NextResponse.next();
 
   // Let the login page through
@@ -59,5 +70,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/portal/:path*"],
 };

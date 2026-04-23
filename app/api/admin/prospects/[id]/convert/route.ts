@@ -1,6 +1,7 @@
 import { Prisma, TargetType } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
+import { onboardingStatusLabel } from "@/lib/onboarding";
 import { prisma } from "@/lib/prisma";
 import { createStatusChangeNote } from "@/lib/prospect-notes";
 
@@ -78,7 +79,7 @@ export async function POST(
           data: {
             userId: user.id,
             fullName,
-            onboardingStatus: "intake_received",
+            onboardingStatus: "draft",
           },
         });
 
@@ -118,5 +119,25 @@ export async function POST(
     include: { notes: { orderBy: { createdAt: "desc" } } },
   });
 
-  return NextResponse.json({ ok: true, prospect: updated });
+  const clientUser = updated
+    ? await prisma.user.findUnique({
+        where: { email: updated.email },
+        include: { clientProfile: true },
+      })
+    : null;
+
+  const onboardingStatus =
+    clientUser?.role === "CLIENT" ? clientUser.clientProfile?.onboardingStatus ?? "draft" : null;
+
+  return NextResponse.json({
+    ok: true,
+    prospect: updated
+      ? {
+          ...updated,
+          clientUserId: clientUser?.role === "CLIENT" ? clientUser.id : null,
+          onboardingStatus,
+          onboardingStatusLabel: onboardingStatusLabel(onboardingStatus),
+        }
+      : null,
+  });
 }

@@ -18,11 +18,29 @@ export default async function AdminPage() {
   const session = await getAdminSession();
   if (!session) redirect("/admin/login");
 
-  const [prospectCount, clientCount, newLeadCount, recentProspects] =
+  const now = new Date();
+  const endOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    23,
+    59,
+    59,
+    999
+  );
+
+  const [prospectCount, clientCount, followUpCount, recentProspects] =
     await Promise.all([
       prisma.prospect.count(),
       prisma.clientProfile.count(),
-      prisma.prospect.count({ where: { status: "NEW_LEAD" } }),
+      prisma.prospect.count({
+        where: {
+          followUpDate: {
+            not: null,
+            lte: endOfToday,
+          },
+        },
+      }),
       prisma.prospect.findMany({ orderBy: { createdAt: "desc" }, take: 8 }),
     ]);
 
@@ -41,8 +59,8 @@ export default async function AdminPage() {
             <span>Total prospects</span>
           </div>
           <div className="metric-card">
-            <strong>{newLeadCount}</strong>
-            <span>New leads</span>
+            <strong>{followUpCount}</strong>
+            <span>Follow-ups due</span>
           </div>
           <div className="metric-card">
             <strong>{clientCount}</strong>
@@ -53,6 +71,15 @@ export default async function AdminPage() {
         <div className="inline-actions" style={{ marginTop: "1.5rem" }}>
           <Link href="/admin/prospects" className="button">
             Manage prospect pipeline
+          </Link>
+          <Link href="/admin/followups" className="button-secondary">
+            Follow-up queue
+            {followUpCount > 0 ? (
+              <span className="badge badge--qualified">{followUpCount}</span>
+            ) : null}
+          </Link>
+          <Link href="/admin/checkins" className="button-secondary">
+            Review client check-ins
           </Link>
         </div>
 

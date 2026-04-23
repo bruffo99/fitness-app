@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth";
+import { onboardingStatusLabel } from "@/lib/onboarding";
 import { prisma } from "@/lib/prisma";
 import {
   ProspectDetailClient,
@@ -21,6 +22,14 @@ export default async function ProspectDetailPage(props: {
   });
   if (!prospect) redirect("/admin/prospects");
 
+  const clientUser = await prisma.user.findUnique({
+    where: { email: prospect.email },
+    include: { clientProfile: true },
+  });
+
+  const onboardingStatus =
+    clientUser?.role === "CLIENT" ? clientUser.clientProfile?.onboardingStatus ?? "draft" : null;
+
   const dto: ProspectDetailDTO = {
     id: prospect.id,
     firstName: prospect.firstName,
@@ -38,6 +47,17 @@ export default async function ProspectDetailPage(props: {
     followUpDate: prospect.followUpDate?.toISOString() ?? null,
     status: prospect.status as ProspectStatusValue,
     createdAt: prospect.createdAt.toISOString(),
+    clientUserId: clientUser?.role === "CLIENT" ? clientUser.id : null,
+    onboardingStatus,
+    onboardingStatusLabel: onboardingStatusLabel(onboardingStatus),
+    documentsHref:
+      prospect.status === "CLIENT_ACTIVE" && clientUser?.role === "CLIENT"
+        ? `/admin/clients/${clientUser.id}/documents`
+        : null,
+    photosHref:
+      prospect.status === "CLIENT_ACTIVE" && clientUser?.role === "CLIENT"
+        ? `/admin/clients/${clientUser.id}/photos`
+        : null,
     notes: prospect.notes.map((n) => ({
       id: n.id,
       body: n.body,

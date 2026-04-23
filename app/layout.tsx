@@ -82,6 +82,9 @@ export default async function RootLayout({
                 <span className="brand__tag">Built different. Train with intent.</span>
               </Link>
               <nav className="site-nav">
+                <Link href="/booking" className="site-nav__link">
+                  Book a session
+                </Link>
                 <Link href="/#lead-form" className="site-nav__link">
                   Apply
                 </Link>

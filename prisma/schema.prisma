@@ -79,8 +79,62 @@ model User {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   adminSessions  AdminSession[]
+  checkIns       CheckIn[]
+  documents      ClientDocument[]
+  gymPhotos      GymPhoto[]
   magicLinks     MagicLinkToken[]
   clientProfile  ClientProfile?
+}
+
+model CheckIn {
+  id             String   @id @default(cuid())
+  userId         String
+  weekOf         DateTime
+  bodyWeight     Float?
+  bodyFat        Float?
+  energyLevel    Int?
+  sleepQuality   Int?
+  adherence      Int?
+  trainingNotes  String?
+  nutritionNotes String?
+  wins           String?
+  struggles      String?
+  coachNotes     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekOf])
+  @@index([userId])
+  @@index([weekOf])
+}
+
+model ClientDocument {
+  id        String   @id @default(cuid())
+  userId     String
+  title      String
+  category   String
+  content    String
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+  @@index([isActive])
+}
+
+model GymPhoto {
+  id        String   @id @default(cuid())
+  userId    String
+  filePath  String
+  note      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model AdminSession {
@@ -114,6 +168,7 @@ model ClientProfile {
   userId            String         @unique
   fullName          String?
   onboardingStatus  String         @default("draft")
+  requiredSessionsPerWeek Int      @default(3)
   trainingHistory   String?
   nutritionNotes    String?
   injuryNotes       String?

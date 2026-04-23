@@ -24,6 +24,20 @@ export function formatDateTime(value: Date) {
   }).format(value);
 }
 
+export function getCurrentWeekStartUtc(now = new Date()) {
+  const weekStart = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate()
+  ));
+  const day = weekStart.getUTCDay();
+  const daysSinceMonday = (day + 6) % 7;
+
+  weekStart.setUTCDate(weekStart.getUTCDate() - daysSinceMonday);
+
+  return weekStart;
+}
+
 export function statusLabel(status: ProspectStatusValue): string {
   switch (status) {
     case "NEW_LEAD":      return "New lead";

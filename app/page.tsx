@@ -23,9 +23,9 @@ export default async function HomePage(props: { searchParams: SearchParams }) {
         <div className="container hero__grid">
           <div className="card card--hero home-reveal home-reveal--delay-100">
             <div className="hero__eyebrow home-reveal">Online coaching</div>
-            <h1 className="home-reveal home-reveal--delay-100">
+            <p className="home-reveal home-reveal--delay-100" style={{ fontSize: "1.65rem", fontWeight: 700, letterSpacing: "0.01em", color: "var(--text-strong)", margin: "0 0 0.25rem", lineHeight: 1.2 }}>
               Built <span className="accent">different.</span> Train with intent.
-            </h1>
+            </p>
             <p className="hero__lead home-reveal home-reveal--delay-200">
               Ruffo Fitness is for people who are done guessing. You get real structure,
               direct feedback, and a plan built around your actual goal — fat loss,
@@ -39,9 +39,16 @@ export default async function HomePage(props: { searchParams: SearchParams }) {
               <span className="pill">No gimmicks</span>
             </div>
 
-            <div className="inline-actions home-reveal home-reveal--delay-400" style={{ marginTop: "2rem" }}>
-              <Link href="#lead-form" className="button">
-                Start your intake
+            <div className="home-reveal home-reveal--delay-400" style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <Link
+                href="/booking"
+                className="button"
+                style={{ fontSize: "1.2rem", padding: "1.1rem 2.5rem", textAlign: "center", fontWeight: 700, letterSpacing: "0.02em" }}
+              >
+                Book a session — $150
+              </Link>
+              <Link href="#lead-form" className="button-secondary" style={{ textAlign: "center" }}>
+                Apply for coaching
               </Link>
             </div>
 
@@ -130,7 +137,7 @@ export default async function HomePage(props: { searchParams: SearchParams }) {
 
           <div className="proof-metrics">
             <div className="proof-metric">
-              <strong>52</strong>
+              <strong>54</strong>
               <span>Years old</span>
             </div>
             <div className="proof-metric">

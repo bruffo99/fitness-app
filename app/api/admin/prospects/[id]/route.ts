@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth";
+import { onboardingStatusLabel } from "@/lib/onboarding";
 import { createStatusChangeNote } from "@/lib/prospect-notes";
 import { prisma } from "@/lib/prisma";
 
@@ -52,6 +53,32 @@ function badRequest(error: string) {
   return NextResponse.json({ ok: false, error }, { status: 400 });
 }
 
+async function buildProspectResponse(id: string) {
+  const updated = await prisma.prospect.findUnique({
+    where: { id },
+    include: { notes: { orderBy: { createdAt: "desc" } } },
+  });
+
+  if (!updated) {
+    return null;
+  }
+
+  const clientUser = await prisma.user.findUnique({
+    where: { email: updated.email },
+    include: { clientProfile: true },
+  });
+
+  const onboardingStatus =
+    clientUser?.role === "CLIENT" ? clientUser.clientProfile?.onboardingStatus ?? "draft" : null;
+
+  return {
+    ...updated,
+    clientUserId: clientUser?.role === "CLIENT" ? clientUser.id : null,
+    onboardingStatus,
+    onboardingStatusLabel: onboardingStatusLabel(onboardingStatus),
+  };
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -83,10 +110,7 @@ export async function POST(
         createStatusChangeNote(prisma, id, body.status),
       ]);
     }
-    const updated = await prisma.prospect.findUnique({
-      where: { id },
-      include: { notes: { orderBy: { createdAt: "desc" } } },
-    });
+    const updated = await buildProspectResponse(id);
     return NextResponse.json({ ok: true, prospect: updated });
   }
 
