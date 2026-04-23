@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth";
+import { normalizeEmail } from "@/lib/email";
 import { onboardingStatusLabel } from "@/lib/onboarding";
 import { createStatusChangeNote } from "@/lib/prospect-notes";
 import { prisma } from "@/lib/prisma";
@@ -63,8 +64,10 @@ async function buildProspectResponse(id: string) {
     return null;
   }
 
-  const clientUser = await prisma.user.findUnique({
-    where: { email: updated.email },
+  const clientUser = await prisma.user.findFirst({
+    where: {
+      email: normalizeEmail(updated.email),
+    },
     include: { clientProfile: true },
   });
 

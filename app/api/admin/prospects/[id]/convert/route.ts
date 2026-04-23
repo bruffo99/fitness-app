@@ -1,6 +1,7 @@
 import { Prisma, TargetType } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
+import { normalizeEmail } from "@/lib/email";
 import { onboardingStatusLabel } from "@/lib/onboarding";
 import { prisma } from "@/lib/prisma";
 import { createStatusChangeNote } from "@/lib/prospect-notes";
@@ -33,10 +34,13 @@ export async function POST(
   }
 
   const fullName = buildFullName(prospect.firstName, prospect.lastName);
+  const normalizedProspectEmail = normalizeEmail(prospect.email);
 
   await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    const existingUser = await tx.user.findUnique({
-      where: { email: prospect.email },
+    const existingUser = await tx.user.findFirst({
+      where: {
+        email: normalizedProspectEmail,
+      },
       include: {
         clientProfile: {
           include: {
@@ -61,7 +65,7 @@ export async function POST(
         })
       : await tx.user.create({
           data: {
-            email: prospect.email,
+            email: normalizedProspectEmail,
             role: "CLIENT",
             firstName: prospect.firstName,
             lastName: prospect.lastName,
@@ -120,8 +124,10 @@ export async function POST(
   });
 
   const clientUser = updated
-    ? await prisma.user.findUnique({
-        where: { email: updated.email },
+    ? await prisma.user.findFirst({
+        where: {
+          email: normalizeEmail(updated.email),
+        },
         include: { clientProfile: true },
       })
     : null;

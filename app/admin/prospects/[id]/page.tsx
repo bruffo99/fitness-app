@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth";
+import { normalizeEmail } from "@/lib/email";
 import { onboardingStatusLabel } from "@/lib/onboarding";
 import { prisma } from "@/lib/prisma";
 import {
@@ -22,8 +23,12 @@ export default async function ProspectDetailPage(props: {
   });
   if (!prospect) redirect("/admin/prospects");
 
-  const clientUser = await prisma.user.findUnique({
-    where: { email: prospect.email },
+  const normalizedProspectEmail = normalizeEmail(prospect.email);
+
+  const clientUser = await prisma.user.findFirst({
+    where: {
+      email: normalizedProspectEmail,
+    },
     include: { clientProfile: true },
   });
 
