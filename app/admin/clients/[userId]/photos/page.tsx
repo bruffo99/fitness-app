@@ -156,7 +156,7 @@ export default async function AdminClientPhotosPage(props: {
                         }}
                       >
                         <img
-                          src={photo.filePath}
+                          src={`/api/gym-photos/file/${photo.id}`}
                           alt={photo.note ? `Gym photo: ${photo.note}` : "Gym photo"}
                           style={{
                             width: "100%",
