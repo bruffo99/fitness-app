@@ -54,12 +54,12 @@ export async function POST(
       addProspectNote(prisma, id, "Follow-up date cleared"),
     ]);
 
-    return NextResponse.redirect(new URL(`/admin/prospects/${id}`, request.url));
+    return NextResponse.redirect(`/admin/prospects/${id}`);
   }
 
   const followUpDate = parseFollowUpDate(dateValue);
   if (!followUpDate) {
-    return NextResponse.redirect(new URL(`/admin/prospects/${id}`, request.url));
+    return NextResponse.redirect(`/admin/prospects/${id}`);
   }
 
   await prisma.$transaction([
@@ -70,5 +70,5 @@ export async function POST(
     addProspectNote(prisma, id, `Follow-up scheduled for ${formatFollowUpNoteDate(dateValue)}`),
   ]);
 
-  return NextResponse.redirect(new URL(`/admin/prospects/${id}`, request.url));
+  return NextResponse.redirect(`/admin/prospects/${id}`);
 }
