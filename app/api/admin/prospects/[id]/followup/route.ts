@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth";
 import { addProspectNote } from "@/lib/prospect-notes";
 import { prisma } from "@/lib/prisma";
+import { buildAbsoluteUrl } from "@/lib/urls";
 
 function parseFollowUpDate(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -54,12 +55,12 @@ export async function POST(
       addProspectNote(prisma, id, "Follow-up date cleared"),
     ]);
 
-    return NextResponse.redirect(`/admin/prospects/${id}`);
+    return NextResponse.redirect(await buildAbsoluteUrl(`/admin/prospects/${id}`), 303);
   }
 
   const followUpDate = parseFollowUpDate(dateValue);
   if (!followUpDate) {
-    return NextResponse.redirect(`/admin/prospects/${id}`);
+    return NextResponse.redirect(await buildAbsoluteUrl(`/admin/prospects/${id}`), 303);
   }
 
   await prisma.$transaction([
@@ -70,5 +71,5 @@ export async function POST(
     addProspectNote(prisma, id, `Follow-up scheduled for ${formatFollowUpNoteDate(dateValue)}`),
   ]);
 
-  return NextResponse.redirect(`/admin/prospects/${id}`);
+  return NextResponse.redirect(await buildAbsoluteUrl(`/admin/prospects/${id}`), 303);
 }
