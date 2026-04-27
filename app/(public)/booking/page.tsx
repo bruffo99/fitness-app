@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CalendlyEmbed } from "./CalendlyEmbed";
 
 export const metadata: Metadata = {
   title: "Book a Session | Ruffo Fitness",
@@ -37,16 +38,7 @@ export default function BookingPage() {
               Select a time below. Payment is collected through PayPal as part of
               the booking — your spot is confirmed once payment is complete.
             </p>
-            <div
-              className="calendly-inline-widget"
-              data-url="https://calendly.com/brianruffo/introduction-session"
-              style={{ minWidth: "320px", height: "700px" }}
-            />
-            <script
-              type="text/javascript"
-              src="https://assets.calendly.com/assets/external/widget.js"
-              async
-            />
+            <CalendlyEmbed url="https://calendly.com/brianruffo/introduction-session" />
           </div>
         </div>
       </section>

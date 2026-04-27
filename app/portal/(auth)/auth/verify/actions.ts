@@ -3,6 +3,7 @@
 import crypto from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { setClientSessionCookie } from "@/lib/client-auth";
 import { prisma } from "@/lib/prisma";
 
 function hashToken(token: string) {
@@ -49,13 +50,7 @@ export async function verifyMagicLinkToken(rawToken: string) {
   ]);
 
   const cookieStore = await cookies();
-  cookieStore.set("client_session", magicLink.user.id, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/portal",
-    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-  });
+  setClientSessionCookie(cookieStore, magicLink.user);
 
   redirect("/portal");
 }

@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { setClientSessionCookie } from "@/lib/client-auth";
 import { prisma } from "@/lib/prisma";
 import { buildAbsoluteUrl } from "@/lib/urls";
 
@@ -44,13 +44,7 @@ export async function GET(request: Request) {
   ]);
 
   const response = NextResponse.redirect(await buildAbsoluteUrl("/portal"));
-  response.cookies.set("client_session", magicLink.user.id, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  });
+  setClientSessionCookie(response.cookies, magicLink.user);
 
   return response;
 }

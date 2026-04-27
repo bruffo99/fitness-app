@@ -116,14 +116,14 @@ export default async function OnboardingPage(props: { searchParams: SearchParams
                 <label htmlFor="primaryGoal">
                   Primary goal — what does success look like in 90 days?
                 </label>
-                <textarea id="primaryGoal" name="primaryGoal" />
+                <textarea id="primaryGoal" name="primaryGoal" defaultValue={profile?.primaryGoal ?? ""} />
               </div>
 
               <div className="field">
                 <label htmlFor="motivation">
                   Why now — what made you commit to this?
                 </label>
-                <textarea id="motivation" name="motivation" />
+                <textarea id="motivation" name="motivation" defaultValue={profile?.motivation ?? ""} />
               </div>
 
               <button type="submit" className="button">

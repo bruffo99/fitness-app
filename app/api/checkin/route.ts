@@ -1,34 +1,35 @@
 import { redirect } from "next/navigation";
+import { z } from "zod";
 import { getClientSession } from "@/lib/client-auth";
 import { prisma } from "@/lib/prisma";
 import { getCurrentWeekStartUtc } from "@/lib/utils";
 
-function parseOptionalFloat(value: FormDataEntryValue | null) {
-  if (typeof value !== "string" || value.trim() === "") {
-    return null;
-  }
+const optionalNumber = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+  z.coerce.number().finite().optional()
+);
 
-  const parsed = Number.parseFloat(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
+const optionalScore = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+  z.coerce.number().int().min(1).max(5).optional()
+);
 
-function parseOptionalInt(value: FormDataEntryValue | null) {
-  if (typeof value !== "string" || value.trim() === "") {
-    return null;
-  }
+const optionalText = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+  z.string().trim().max(2000).optional()
+);
 
-  const parsed = Number.parseInt(value, 10);
-  return Number.isInteger(parsed) ? parsed : null;
-}
-
-function parseOptionalText(value: FormDataEntryValue | null) {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const trimmed = value.trim();
-  return trimmed ? trimmed : null;
-}
+const checkInSchema = z.object({
+  bodyWeight: optionalNumber.pipe(z.number().min(50).max(700).optional()),
+  bodyFat: optionalNumber.pipe(z.number().min(1).max(75).optional()),
+  energyLevel: optionalScore,
+  sleepQuality: optionalScore,
+  adherence: optionalScore,
+  trainingNotes: optionalText,
+  nutritionNotes: optionalText,
+  wins: optionalText,
+  struggles: optionalText
+});
 
 export async function POST(request: Request) {
   const user = await getClientSession();
@@ -38,6 +39,33 @@ export async function POST(request: Request) {
   }
 
   const formData = await request.formData();
+  const parsed = checkInSchema.safeParse({
+    bodyWeight: formData.get("bodyWeight"),
+    bodyFat: formData.get("bodyFat"),
+    energyLevel: formData.get("energyLevel"),
+    sleepQuality: formData.get("sleepQuality"),
+    adherence: formData.get("adherence"),
+    trainingNotes: formData.get("trainingNotes"),
+    nutritionNotes: formData.get("nutritionNotes"),
+    wins: formData.get("wins"),
+    struggles: formData.get("struggles")
+  });
+
+  if (!parsed.success) {
+    redirect("/portal/checkin?error=1");
+  }
+
+  const checkInData = {
+    bodyWeight: parsed.data.bodyWeight ?? null,
+    bodyFat: parsed.data.bodyFat ?? null,
+    energyLevel: parsed.data.energyLevel ?? null,
+    sleepQuality: parsed.data.sleepQuality ?? null,
+    adherence: parsed.data.adherence ?? null,
+    trainingNotes: parsed.data.trainingNotes ?? null,
+    nutritionNotes: parsed.data.nutritionNotes ?? null,
+    wins: parsed.data.wins ?? null,
+    struggles: parsed.data.struggles ?? null
+  };
   const weekOf = getCurrentWeekStartUtc();
 
   await prisma.checkIn.upsert({
@@ -47,29 +75,11 @@ export async function POST(request: Request) {
         weekOf
       }
     },
-    update: {
-      bodyWeight: parseOptionalFloat(formData.get("bodyWeight")),
-      bodyFat: parseOptionalFloat(formData.get("bodyFat")),
-      energyLevel: parseOptionalInt(formData.get("energyLevel")),
-      sleepQuality: parseOptionalInt(formData.get("sleepQuality")),
-      adherence: parseOptionalInt(formData.get("adherence")),
-      trainingNotes: parseOptionalText(formData.get("trainingNotes")),
-      nutritionNotes: parseOptionalText(formData.get("nutritionNotes")),
-      wins: parseOptionalText(formData.get("wins")),
-      struggles: parseOptionalText(formData.get("struggles"))
-    },
+    update: checkInData,
     create: {
       userId: user.id,
       weekOf,
-      bodyWeight: parseOptionalFloat(formData.get("bodyWeight")),
-      bodyFat: parseOptionalFloat(formData.get("bodyFat")),
-      energyLevel: parseOptionalInt(formData.get("energyLevel")),
-      sleepQuality: parseOptionalInt(formData.get("sleepQuality")),
-      adherence: parseOptionalInt(formData.get("adherence")),
-      trainingNotes: parseOptionalText(formData.get("trainingNotes")),
-      nutritionNotes: parseOptionalText(formData.get("nutritionNotes")),
-      wins: parseOptionalText(formData.get("wins")),
-      struggles: parseOptionalText(formData.get("struggles"))
+      ...checkInData
     }
   });
 

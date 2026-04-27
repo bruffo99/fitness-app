@@ -59,6 +59,12 @@ export default async function CheckInPage(props: { searchParams: SearchParams })
           </div>
         ) : null}
 
+        {typeof searchParams.error === "string" ? (
+          <div className="feedback feedback--error" style={{ marginBottom: "1rem" }}>
+            Check-in could not be saved. Review the entered values and try again.
+          </div>
+        ) : null}
+
         {existingCheckIn ? (
           <div className="card">
             <div className="section__eyebrow">Submitted</div>

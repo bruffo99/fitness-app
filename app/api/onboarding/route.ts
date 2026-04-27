@@ -50,6 +50,8 @@ export async function POST(request: Request) {
       trainingHistory: parseOptionalText(formData.get("trainingHistory")),
       nutritionNotes: parseOptionalText(formData.get("nutritionNotes")),
       injuryNotes: parseOptionalText(formData.get("injuryNotes")),
+      primaryGoal: parseOptionalText(formData.get("primaryGoal")),
+      motivation: parseOptionalText(formData.get("motivation")),
       onboardingStatus: "intake_complete",
     },
   });
