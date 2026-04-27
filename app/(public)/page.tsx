@@ -150,11 +150,19 @@ export default async function HomePage(props: { searchParams: SearchParams }) {
             </div>
           </div>
 
-          <p className="proof-note">
-            Coaching only works when the standard is real. If you want shortcuts,
-            this is the wrong place. If you want structure, accountability, and visible
-            change over time, you&apos;re exactly where you should be.
-          </p>
+          <div className="story-block home-reveal">
+            <div className="section__eyebrow">In his own words</div>
+            <blockquote className="story-block__quote">
+              400 pounds. Type 2 diabetes. Foot problems so bad every step hurt.
+              Standing in front of a mirror in my early 40s, I couldn&apos;t look at
+              myself anymore. I saw where I was headed — and I made one decision:
+              I wanted to live, not just exist. Within one year, everything changed.
+              That was over 10 years ago. It&apos;s why I coach.
+            </blockquote>
+            <Link href="/my-story" className="story-block__link">
+              Read the full story →
+            </Link>
+          </div>
         </div>
       </section>
 

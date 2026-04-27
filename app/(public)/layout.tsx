@@ -19,6 +19,9 @@ export default async function PublicLayout({
             <span className="brand__tag">Built different. Train with intent.</span>
           </Link>
           <nav className="site-nav">
+            <Link href="/my-story" className="site-nav__link">
+              My story
+            </Link>
             <Link href="/booking" className="site-nav__link">
               Book a session
             </Link>

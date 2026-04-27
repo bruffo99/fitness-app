@@ -4,6 +4,7 @@ import { getAdminSession } from "@/lib/auth";
 import { getClientDocumentCategoryLabel } from "@/lib/client-documents";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
+import { Breadcrumb } from "@/app/components/Breadcrumb";
 
 export default async function AdminClientDocumentsPage(props: {
   params: Promise<{ userId: string }>;
@@ -35,6 +36,14 @@ export default async function AdminClientDocumentsPage(props: {
   return (
     <section className="page">
       <div className="container">
+        <Breadcrumb
+          items={[
+            { label: "Dashboard", href: "/admin" },
+            { label: "Prospects", href: "/admin/prospects" },
+            { label: clientName },
+            { label: "Documents" },
+          ]}
+        />
         <div className="page-header">
           <div className="page-kicker">Client documents</div>
           <h1>

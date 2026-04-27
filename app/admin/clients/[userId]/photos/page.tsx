@@ -4,6 +4,7 @@ import { getAdminSession } from "@/lib/auth";
 import { getGymPhotoWeekLabel } from "@/lib/gym-photos";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime, getCurrentWeekStartUtc } from "@/lib/utils";
+import { Breadcrumb } from "@/app/components/Breadcrumb";
 
 type PhotoWeekGroup = {
   key: string;
@@ -81,6 +82,14 @@ export default async function AdminClientPhotosPage(props: {
   return (
     <section className="page">
       <div className="container" style={{ maxWidth: "1040px" }}>
+        <Breadcrumb
+          items={[
+            { label: "Dashboard", href: "/admin" },
+            { label: "Prospects", href: "/admin/prospects" },
+            { label: clientName, href: `/admin/clients/${userId}/documents` },
+            { label: "Photos" },
+          ]}
+        />
         <div className="page-header">
           <div className="page-kicker">Client gym photos</div>
           <h1>

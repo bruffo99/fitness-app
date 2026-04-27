@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useState, useTransition } from "react";
 import { StatusBadge } from "@/app/components/StatusBadge";
+import { Breadcrumb } from "@/app/components/Breadcrumb";
 import { useToast } from "@/app/components/Toast";
 import { onboardingStatusLabel } from "@/lib/onboarding";
 import {
@@ -213,6 +214,13 @@ export function ProspectDetailClient({ initial }: { initial: ProspectDetailDTO }
   return (
     <section className="page">
       <div className="container" style={{ maxWidth: "920px" }}>
+        <Breadcrumb
+          items={[
+            { label: "Dashboard", href: "/admin" },
+            { label: "Prospects", href: "/admin/prospects" },
+            { label: `${prospect.firstName} ${prospect.lastName}` },
+          ]}
+        />
         <div className="page-header">
           <div className="page-kicker">Prospect detail</div>
           <h1>

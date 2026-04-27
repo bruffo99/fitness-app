@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getClientSession } from "@/lib/client-auth";
+import { PortalNav } from "@/app/portal/PortalNav";
 
 export default async function PortalLayout({
   children
@@ -24,7 +25,8 @@ export default async function PortalLayout({
             <span className="brand__tag">Client coaching portal</span>
           </Link>
           <nav className="site-nav">
-            <span className="site-nav__link">{user.email}</span>
+            <PortalNav />
+            <span className="site-nav__divider" />
             <Link href="/api/auth/signout" className="site-nav__button">
               Sign out
             </Link>

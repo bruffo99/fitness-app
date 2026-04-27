@@ -102,6 +102,11 @@ export default async function ProspectsPage(props: { searchParams: SearchParams 
             Prospect <span className="accent">pipeline</span>
           </h1>
           <p>Review, manage, and convert leads.</p>
+          <div className="inline-actions" style={{ marginTop: "1rem" }}>
+            <Link href="/admin/prospects/new" className="button">
+              + Add prospect
+            </Link>
+          </div>
         </div>
 
         <ProspectsSearchInput initialQuery={query} />

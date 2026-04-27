@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth";
 import { CLIENT_DOCUMENT_CATEGORIES, getClientDocumentCategoryLabel } from "@/lib/client-documents";
 import { prisma } from "@/lib/prisma";
+import { Breadcrumb } from "@/app/components/Breadcrumb";
 
 export default async function EditClientDocumentPage(props: {
   params: Promise<{ userId: string; docId: string }>;
@@ -32,6 +33,15 @@ export default async function EditClientDocumentPage(props: {
   return (
     <section className="page">
       <div className="container" style={{ maxWidth: "820px" }}>
+        <Breadcrumb
+          items={[
+            { label: "Dashboard", href: "/admin" },
+            { label: "Prospects", href: "/admin/prospects" },
+            { label: document.user.email, href: `/admin/clients/${userId}/documents` },
+            { label: "Documents", href: `/admin/clients/${userId}/documents` },
+            { label: "Edit" },
+          ]}
+        />
         <div className="page-header">
           <div className="page-kicker">Client documents</div>
           <h1>

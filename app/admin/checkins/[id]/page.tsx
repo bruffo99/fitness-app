@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatDateTime } from "@/lib/utils";
+import { Breadcrumb } from "@/app/components/Breadcrumb";
 
 export const metadata: Metadata = {
   title: "Check-In Detail",
@@ -48,6 +49,13 @@ export default async function AdminCheckInDetailPage(props: {
   return (
     <section className="page">
       <div className="container">
+        <Breadcrumb
+          items={[
+            { label: "Dashboard", href: "/admin" },
+            { label: "Check-ins", href: "/admin/checkins" },
+            { label: checkIn.user.email },
+          ]}
+        />
         <div className="page-header">
           <div className="page-kicker">Admin check-in</div>
           <h1>
