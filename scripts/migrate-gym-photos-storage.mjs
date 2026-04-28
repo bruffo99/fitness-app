@@ -2,7 +2,10 @@ import { cp, mkdir, rm, stat } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
-const legacyRoot = path.join(process.cwd(), "public", "uploads", "gym-photos");
+const legacyRoot = path.resolve(
+  process.env.LEGACY_GYM_PHOTO_UPLOAD_ROOT ??
+    path.join(process.cwd(), "public", "uploads", "gym-photos")
+);
 
 function getDefaultUploadRoot() {
   if (process.env.NODE_ENV === "production") {
