@@ -1017,6 +1017,64 @@ tbody tr:hover {
   font-weight: 800;
 }
 
+.checkin-proof-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.checkin-proof-header p {
+  margin: 0;
+}
+
+.checkin-proof-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.checkin-proof-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+}
+
+.checkin-proof-card:hover {
+  border-color: rgba(245, 158, 11, 0.32);
+  background: rgba(245, 158, 11, 0.06);
+}
+
+.checkin-proof-card__image {
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.checkin-proof-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.checkin-proof-card__meta {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.checkin-proof-card__meta span {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .form--inline {
   display: flex;
   align-items: flex-end;

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import type { Route } from "next";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -24,6 +25,12 @@ function renderText(value: string | null | undefined) {
   return value?.trim() || "No response provided.";
 }
 
+function getNextWeekStart(value: Date) {
+  const nextWeek = new Date(value);
+  nextWeek.setUTCDate(nextWeek.getUTCDate() + 7);
+  return nextWeek;
+}
+
 export default async function AdminCheckInDetailPage(props: {
   params: Promise<{ id: string }>;
 }) {
@@ -36,6 +43,7 @@ export default async function AdminCheckInDetailPage(props: {
     include: {
       user: {
         select: {
+          id: true,
           email: true
         }
       }
@@ -45,6 +53,24 @@ export default async function AdminCheckInDetailPage(props: {
   if (!checkIn) {
     redirect("/admin/checkins");
   }
+
+  const gymPhotos = await prisma.gymPhoto.findMany({
+    where: {
+      userId: checkIn.userId,
+      createdAt: {
+        gte: checkIn.weekOf,
+        lt: getNextWeekStart(checkIn.weekOf),
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    select: {
+      id: true,
+      note: true,
+      createdAt: true,
+    },
+  });
 
   return (
     <section className="page">
@@ -124,6 +150,51 @@ export default async function AdminCheckInDetailPage(props: {
               <strong>{formatDateTime(checkIn.updatedAt)}</strong>
             </div>
           </div>
+        </div>
+
+        <div className="admin-panel" style={{ marginBottom: "1.5rem" }}>
+          <div className="checkin-proof-header">
+            <div>
+              <div className="section__eyebrow">Gym proof for this week</div>
+              <p className="muted">
+                {gymPhotos.length} {gymPhotos.length === 1 ? "photo" : "photos"} uploaded for week of {formatDate(checkIn.weekOf)}.
+              </p>
+            </div>
+            <Link
+              href={`/admin/clients/${checkIn.user.id}/photos` as Route}
+              className="button-secondary"
+            >
+              View full photo history
+            </Link>
+          </div>
+
+          {gymPhotos.length === 0 ? (
+            <p className="empty-state">No gym photos were uploaded for this check-in week.</p>
+          ) : (
+            <div className="checkin-proof-grid">
+              {gymPhotos.map((photo) => (
+                <a
+                  key={photo.id}
+                  href={`/api/gym-photos/file/${photo.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="checkin-proof-card"
+                >
+                  <span className="checkin-proof-card__image">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/api/gym-photos/file/${photo.id}`}
+                      alt={photo.note ? `Gym proof: ${photo.note}` : "Gym proof photo"}
+                    />
+                  </span>
+                  <span className="checkin-proof-card__meta">
+                    <strong>{formatDateTime(photo.createdAt)}</strong>
+                    <span>{photo.note || "No note added."}</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="admin-panel">
