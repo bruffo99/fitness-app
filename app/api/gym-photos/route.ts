@@ -11,6 +11,8 @@ import {
   resolveGymPhotoDiskPath,
 } from "@/lib/gym-photos";
 import { prisma } from "@/lib/prisma";
+import { getCurrentWeekStartUtc } from "@/lib/utils";
+import { syncWeeklyCompliance } from "@/lib/weekly-compliance";
 
 export const runtime = "nodejs";
 
@@ -70,6 +72,7 @@ export async function POST(request: Request) {
         id: true,
       },
     });
+    await syncWeeklyCompliance(user.id, getCurrentWeekStartUtc());
 
     return NextResponse.json({ ok: true, id: createdPhoto.id });
   } catch (error) {

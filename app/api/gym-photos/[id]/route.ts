@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { getClientSession } from "@/lib/client-auth";
 import { resolveGymPhotoDiskPathCandidates } from "@/lib/gym-photos";
 import { prisma } from "@/lib/prisma";
+import { getCurrentWeekStartUtc } from "@/lib/utils";
+import { syncWeeklyCompliance } from "@/lib/weekly-compliance";
 
 export const runtime = "nodejs";
 
@@ -23,6 +25,7 @@ export async function DELETE(
       id: true,
       userId: true,
       filePath: true,
+      createdAt: true,
     },
   });
 
@@ -42,6 +45,7 @@ export async function DELETE(
   await prisma.gymPhoto.delete({
     where: { id: gymPhoto.id },
   });
+  await syncWeeklyCompliance(gymPhoto.userId, getCurrentWeekStartUtc(gymPhoto.createdAt));
 
   return NextResponse.json({ ok: true });
 }

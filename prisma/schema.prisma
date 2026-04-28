@@ -29,6 +29,13 @@ enum TargetType {
   OTHER
 }
 
+enum WeeklyComplianceStatus {
+  ON_TRACK
+  WATCH
+  MISSED
+  NEEDS_REVIEW
+}
+
 model Prospect {
   id               String         @id @default(cuid())
   firstName        String
@@ -83,6 +90,7 @@ model User {
   documents      ClientDocument[]
   gymPhotos      GymPhoto[]
   magicLinks     MagicLinkToken[]
+  weeklyCompliance WeeklyCompliance[]
   clientProfile  ClientProfile?
 }
 
@@ -135,6 +143,28 @@ model GymPhoto {
 
   @@index([userId])
   @@index([createdAt])
+}
+
+model WeeklyCompliance {
+  id                   String                 @id @default(cuid())
+  userId               String
+  weekStart            DateTime
+  requiredSessions     Int                    @default(3)
+  gymPhotosUploaded    Int                    @default(0)
+  checkInSubmittedAt   DateTime?
+  checkInId            String?
+  adherence            Int?
+  coachReviewedAt      DateTime?
+  status               WeeklyComplianceStatus @default(MISSED)
+  nextAction           String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekStart])
+  @@index([weekStart])
+  @@index([status])
+  @@index([userId])
 }
 
 model AdminSession {

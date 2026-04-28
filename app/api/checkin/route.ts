@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getClientSession } from "@/lib/client-auth";
 import { prisma } from "@/lib/prisma";
 import { getCurrentWeekStartUtc } from "@/lib/utils";
+import { syncWeeklyCompliance } from "@/lib/weekly-compliance";
 
 const optionalNumber = z.preprocess(
   (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
@@ -82,6 +83,7 @@ export async function POST(request: Request) {
       ...checkInData
     }
   });
+  await syncWeeklyCompliance(user.id, weekOf);
 
   redirect("/portal/checkin?success=1");
 }

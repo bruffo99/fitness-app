@@ -4,7 +4,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatDate, formatDateTime, getCurrentWeekStartUtc } from "@/lib/utils";
+import { formatDate, getCurrentWeekStartUtc } from "@/lib/utils";
+import { syncWeeklyComplianceForUsers } from "@/lib/weekly-compliance";
 import { StatusBadge } from "@/app/components/StatusBadge";
 
 export const metadata: Metadata = {
@@ -196,12 +197,30 @@ export default async function AdminPage() {
     59,
     999
   );
+  const activeClientIds = await prisma.user.findMany({
+    where: {
+      role: "CLIENT",
+      isActive: true,
+      clientProfile: {
+        is: {
+          onboardingStatus: "active",
+        },
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  await syncWeeklyComplianceForUsers(
+    activeClientIds.map((client) => client.id),
+    weekStart
+  );
 
   const [
     prospects,
-    activeClients,
+    weeklyCompliance,
     totalProspects,
-    activeClientCount,
     totalCheckInsThisWeek,
   ] = await Promise.all([
     prisma.prospect.findMany({
@@ -217,65 +236,39 @@ export default async function AdminPage() {
       ],
       take: 50,
     }),
-    prisma.user.findMany({
+    prisma.weeklyCompliance.findMany({
       where: {
-        role: "CLIENT",
-        isActive: true,
-        clientProfile: {
-          is: {
-            onboardingStatus: "active",
-          },
+        weekStart,
+        userId: {
+          in: activeClientIds.map((client) => client.id),
         },
       },
       select: {
         id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        clientProfile: {
-          select: {
-            requiredSessionsPerWeek: true,
-          },
-        },
-        checkIns: {
-          where: {
-            weekOf: weekStart,
-          },
-          orderBy: {
-            updatedAt: "desc",
-          },
-          take: 1,
+        userId: true,
+        requiredSessions: true,
+        gymPhotosUploaded: true,
+        checkInSubmittedAt: true,
+        checkInId: true,
+        adherence: true,
+        coachReviewedAt: true,
+        status: true,
+        nextAction: true,
+        user: {
           select: {
             id: true,
-            adherence: true,
-            coachNotes: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-        gymPhotos: {
-          where: {
-            createdAt: {
-              gte: weekStart,
-            },
-          },
-          select: {
-            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
           },
         },
       },
       orderBy: [
-        { lastName: "asc" },
-        { firstName: "asc" },
-        { email: "asc" },
+        { status: "asc" },
+        { updatedAt: "desc" },
       ],
     }),
     prisma.prospect.count(),
-    prisma.clientProfile.count({
-      where: {
-        onboardingStatus: "active",
-      },
-    }),
     prisma.checkIn.count({
       where: {
         weekOf: weekStart,
@@ -307,74 +300,65 @@ export default async function AdminPage() {
       status: prospect.status,
     }));
 
-  const missedCheckIns: ClientQueueItem[] = activeClients
-    .filter((client) => client.checkIns.length === 0)
-    .map((client) => ({
-      id: client.id,
-      name: clientName(client),
-      email: client.email,
-      href: `/admin/clients/${client.id}/photos` as Route,
+  const missedCheckIns: ClientQueueItem[] = weeklyCompliance
+    .filter((week) => !week.checkInSubmittedAt || week.status === "MISSED")
+    .map((week) => ({
+      id: week.id,
+      name: clientName(week.user),
+      email: week.user.email,
+      href: `/admin/clients/${week.userId}/photos` as Route,
       detail: `No check-in submitted for week of ${formatDate(weekStart)}.`,
       meta: "Missed",
       priority: "critical",
     }));
 
-  const checkInsNeedingReview: ClientQueueItem[] = activeClients
-    .flatMap((client) => {
-      const checkIn = client.checkIns[0];
-
-      if (!checkIn || checkIn.coachNotes?.trim()) {
+  const checkInsNeedingReview: ClientQueueItem[] = weeklyCompliance
+    .flatMap((week) => {
+      if (!week.checkInId || week.coachReviewedAt) {
         return [];
       }
 
       return [{
-        id: checkIn.id,
-        name: clientName(client),
-        email: client.email,
-        href: `/admin/checkins/${checkIn.id}` as Route,
-        detail: `Submitted ${formatDateTime(checkIn.createdAt)}.`,
+        id: week.id,
+        name: clientName(week.user),
+        email: week.user.email,
+        href: `/admin/checkins/${week.checkInId}` as Route,
+        detail: week.checkInSubmittedAt
+          ? `Submitted ${formatDate(week.checkInSubmittedAt)}.`
+          : "Submitted this week.",
         meta: "Review",
         priority: "warning" as const,
       }];
     });
 
-  const lowAdherence: ClientQueueItem[] = activeClients
-    .flatMap((client) => {
-      const checkIn = client.checkIns[0];
-
-      if (!checkIn || checkIn.adherence == null || checkIn.adherence > 2) {
+  const lowAdherence: ClientQueueItem[] = weeklyCompliance
+    .flatMap((week) => {
+      if (!week.checkInId || week.adherence == null || week.adherence > 2) {
         return [];
       }
 
       return [{
-        id: `${checkIn.id}-adherence`,
-        name: clientName(client),
-        email: client.email,
-        href: `/admin/checkins/${checkIn.id}` as Route,
-        detail: `Reported ${checkIn.adherence}/5 plan adherence this week.`,
+        id: `${week.id}-adherence`,
+        name: clientName(week.user),
+        email: week.user.email,
+        href: `/admin/checkins/${week.checkInId}` as Route,
+        detail: `Reported ${week.adherence}/5 plan adherence this week.`,
         meta: "Low",
         priority: "critical" as const,
       }];
     });
 
-  const photoDeficits: ClientQueueItem[] = activeClients
-    .filter((client) => {
-      const required = client.clientProfile?.requiredSessionsPerWeek ?? 3;
-      return client.gymPhotos.length < required;
-    })
-    .map((client) => {
-      const required = client.clientProfile?.requiredSessionsPerWeek ?? 3;
-
-      return {
-        id: `${client.id}-photos`,
-        name: clientName(client),
-        email: client.email,
-        href: `/admin/clients/${client.id}/photos` as Route,
-        detail: `${client.gymPhotos.length} of ${required} required gym photos uploaded this week.`,
-        meta: client.gymPhotos.length === 0 ? "None" : "Behind",
-        priority: client.gymPhotos.length === 0 ? "critical" : "warning",
-      };
-    });
+  const photoDeficits: ClientQueueItem[] = weeklyCompliance
+    .filter((week) => week.gymPhotosUploaded < week.requiredSessions)
+    .map((week) => ({
+      id: `${week.id}-photos`,
+      name: clientName(week.user),
+      email: week.user.email,
+      href: `/admin/clients/${week.userId}/photos` as Route,
+      detail: `${week.gymPhotosUploaded} of ${week.requiredSessions} required gym photos uploaded this week.`,
+      meta: week.gymPhotosUploaded === 0 ? "None" : "Behind",
+      priority: week.gymPhotosUploaded === 0 ? "critical" : "warning",
+    }));
 
   const attentionCount =
     newLeadItems.length +
@@ -403,7 +387,7 @@ export default async function AdminPage() {
             <span>Open attention items</span>
           </div>
           <div className="metric-card">
-            <strong>{activeClientCount}</strong>
+            <strong>{activeClientIds.length}</strong>
             <span>Active clients</span>
           </div>
           <div className="metric-card">

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncWeeklyCompliance } from "@/lib/weekly-compliance";
 
 function parseCoachNotes(value: FormDataEntryValue | null) {
   if (typeof value !== "string") {
@@ -23,12 +24,17 @@ export async function POST(
   const { id } = await params;
   const formData = await request.formData();
 
-  await prisma.checkIn.update({
+  const checkIn = await prisma.checkIn.update({
     where: { id },
     data: {
       coachNotes: parseCoachNotes(formData.get("coachNotes"))
-    }
+    },
+    select: {
+      userId: true,
+      weekOf: true,
+    },
   });
+  await syncWeeklyCompliance(checkIn.userId, checkIn.weekOf);
 
   redirect(`/admin/checkins/${id}`);
 }

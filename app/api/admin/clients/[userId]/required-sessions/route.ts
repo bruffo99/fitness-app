@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildAbsoluteUrl } from "@/lib/urls";
+import { getCurrentWeekStartUtc } from "@/lib/utils";
+import { syncWeeklyCompliance } from "@/lib/weekly-compliance";
 
 function parseRequiredSessionsPerWeek(value: FormDataEntryValue | null) {
   if (typeof value !== "string") {
@@ -52,6 +54,7 @@ export async function POST(
       userId,
     },
   });
+  await syncWeeklyCompliance(userId, getCurrentWeekStartUtc());
 
   return NextResponse.redirect(
     await buildAbsoluteUrl(`/admin/clients/${userId}/photos`),
