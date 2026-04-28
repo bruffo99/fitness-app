@@ -6,6 +6,7 @@ import {
   buildGymPhotoFileName,
   buildGymPhotoPublicPath,
   getGymPhotoStorageDir,
+  isAllowedGymPhotoContent,
   MAX_GYM_PHOTO_BYTES,
   resolveGymPhotoDiskPath,
 } from "@/lib/gym-photos";
@@ -49,9 +50,14 @@ export async function POST(request: Request) {
   const storageDir = getGymPhotoStorageDir(user.id);
   const publicPath = buildGymPhotoPublicPath(user.id, fileName);
   const diskPath = path.join(storageDir, fileName);
+  const buffer = Buffer.from(await photo.arrayBuffer());
+
+  if (!isAllowedGymPhotoContent(photo, buffer)) {
+    return NextResponse.json({ ok: false, error: "invalid_file_type" }, { status: 400 });
+  }
 
   await mkdir(storageDir, { recursive: true });
-  await writeFile(diskPath, Buffer.from(await photo.arrayBuffer()));
+  await writeFile(diskPath, buffer);
 
   try {
     const createdPhoto = await prisma.gymPhoto.create({

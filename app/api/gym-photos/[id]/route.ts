@@ -1,7 +1,7 @@
 import { unlink } from "node:fs/promises";
 import { NextResponse } from "next/server";
 import { getClientSession } from "@/lib/client-auth";
-import { resolveGymPhotoDiskPath } from "@/lib/gym-photos";
+import { resolveGymPhotoDiskPathCandidates } from "@/lib/gym-photos";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -34,7 +34,11 @@ export async function DELETE(
     return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
   }
 
-  await unlink(resolveGymPhotoDiskPath(gymPhoto.filePath)).catch(() => {});
+  await Promise.all(
+    resolveGymPhotoDiskPathCandidates(gymPhoto.filePath).map((diskPath) =>
+      unlink(diskPath).catch(() => {})
+    )
+  );
   await prisma.gymPhoto.delete({
     where: { id: gymPhoto.id },
   });

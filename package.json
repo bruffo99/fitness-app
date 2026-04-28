@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "photos:migrate-storage": "node scripts/migrate-gym-photos-storage.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.6.0",
