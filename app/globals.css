@@ -821,6 +821,37 @@ th,
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.command-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.command-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.command-panel__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.command-panel__header p {
+  margin: 0;
+}
+
+.command-table table {
+  min-width: 680px;
+}
+
+.command-table td p {
+  margin: 0.35rem 0 0;
+}
+
 .table-wrap {
   overflow-x: auto;
   border-radius: 18px;
