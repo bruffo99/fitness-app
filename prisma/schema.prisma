@@ -36,6 +36,21 @@ enum WeeklyComplianceStatus {
   NEEDS_REVIEW
 }
 
+enum EmailQueueKind {
+  CLIENT_CHECKIN_REMINDER
+  CLIENT_GYM_PHOTO_REMINDER
+  ADMIN_CHECKIN_REVIEW_NOTICE
+  CLIENT_COACH_FEEDBACK
+  CLIENT_LOW_ADHERENCE_FOLLOWUP
+}
+
+enum EmailQueueStatus {
+  DRAFT
+  SENT
+  SKIPPED
+  FAILED
+}
+
 model Prospect {
   id               String         @id @default(cuid())
   firstName        String
@@ -88,6 +103,7 @@ model User {
   adminSessions  AdminSession[]
   checkIns       CheckIn[]
   documents      ClientDocument[]
+  emailQueue     EmailQueue[]
   gymPhotos      GymPhoto[]
   magicLinks     MagicLinkToken[]
   weeklyCompliance WeeklyCompliance[]
@@ -110,6 +126,7 @@ model CheckIn {
   coachNotes     String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  emailQueue     EmailQueue[]
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, weekOf])
@@ -159,12 +176,41 @@ model WeeklyCompliance {
   nextAction           String?
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
+  emailQueue           EmailQueue[]
   user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, weekStart])
   @@index([weekStart])
   @@index([status])
   @@index([userId])
+}
+
+model EmailQueue {
+  id                 String           @id @default(cuid())
+  kind               EmailQueueKind
+  status             EmailQueueStatus @default(DRAFT)
+  isEnabled          Boolean          @default(false)
+  toEmail            String
+  subject            String
+  body               String
+  bodyHtml           String?
+  dedupeKey          String           @unique
+  userId             String?
+  checkInId          String?
+  weeklyComplianceId String?
+  weekStart          DateTime?
+  lastError          String?
+  sentAt             DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  checkIn            CheckIn?         @relation(fields: [checkInId], references: [id], onDelete: SetNull)
+  user               User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  weeklyCompliance   WeeklyCompliance? @relation(fields: [weeklyComplianceId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([kind])
+  @@index([userId])
+  @@index([weekStart])
 }
 
 model AdminSession {

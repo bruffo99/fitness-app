@@ -9,6 +9,7 @@ const NAV_ITEMS: { label: string; href: Route }[] = [
   { label: "Prospects", href: "/admin/prospects" },
   { label: "Follow-ups", href: "/admin/followups" },
   { label: "Check-ins", href: "/admin/checkins" },
+  { label: "Emails", href: "/admin/emails" },
 ];
 
 export function AdminNav({ email }: { email: string }) {

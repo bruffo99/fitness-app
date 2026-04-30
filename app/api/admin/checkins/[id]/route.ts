@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth";
+import { queueCoachFeedbackEmail } from "@/lib/email-queue";
 import { prisma } from "@/lib/prisma";
 import { syncWeeklyCompliance } from "@/lib/weekly-compliance";
 
@@ -35,6 +36,7 @@ export async function POST(
     },
   });
   await syncWeeklyCompliance(checkIn.userId, checkIn.weekOf);
+  await queueCoachFeedbackEmail(id);
 
   redirect(`/admin/checkins/${id}`);
 }

@@ -10,7 +10,7 @@ type ProspectEmailPayload = {
   message: string | null;
 };
 
-type BridgeMessage = {
+export type BridgeMessage = {
   to: string;
   subject: string;
   body: string;
@@ -27,7 +27,7 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#39;");
 }
 
-function getMailConfig() {
+export function getMailConfig() {
   const notificationEmail =
     process.env.PROSPECT_NOTIFICATION_EMAIL?.trim() ??
     process.env.ADMIN_BOOTSTRAP_EMAIL?.trim();
@@ -153,12 +153,23 @@ async function sendWithRetry(
       return sendWithRetry(url, token, messages, attempt + 1);
     }
 
-    // All retries exhausted — log clearly so it can be monitored
     console.error(
       `[mail] All ${MAX_RETRIES} attempts failed for messages to [${messages.map((m) => m.to).join(", ")}]`,
       error
     );
+    throw error;
   }
+}
+
+export async function sendBridgeMessages(messages: BridgeMessage[]) {
+  const config = getMailConfig();
+  if (!config) {
+    throw new Error("Mail bridge is not configured.");
+  }
+
+  if (messages.length === 0) return;
+
+  await sendWithRetry(config.bridgeUrl, config.bridgeToken, messages);
 }
 
 export async function sendProspectEmails(payload: ProspectEmailPayload) {
@@ -171,5 +182,9 @@ export async function sendProspectEmails(payload: ProspectEmailPayload) {
   const messages = await buildMessages(payload);
   if (messages.length === 0) return;
 
-  await sendWithRetry(config.bridgeUrl, config.bridgeToken, messages);
+  try {
+    await sendWithRetry(config.bridgeUrl, config.bridgeToken, messages);
+  } catch {
+    // Lead capture emails are best-effort; failed sends are already logged by sendWithRetry.
+  }
 }

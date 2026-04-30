@@ -410,6 +410,9 @@ export default async function AdminPage() {
           <Link href="/admin/followups" className="button-secondary">
             Follow-up calendar
           </Link>
+          <Link href="/admin/emails" className="button-secondary">
+            Email queue
+          </Link>
         </div>
 
         <div className="command-grid">

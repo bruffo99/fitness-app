@@ -406,6 +406,37 @@ th,
   font-weight: 700;
 }
 
+.calendly-embed {
+  position: relative;
+  min-height: 700px;
+}
+
+.calendly-embed__widget {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  width: 100%;
+  height: 700px;
+}
+
+.calendly-embed__status {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: rgba(8, 8, 8, 0.42);
+}
+
+.calendly-embed__status p {
+  max-width: 34rem;
+  margin: 0 auto 1rem;
+}
+
 .hero__stats,
 .stats {
   grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -3,6 +3,8 @@ node_modules
 prisma/dev.db
 prisma/dev.db-journal
 .env
+.env.*
+!.env.example
 storage/
 tsconfig.tsbuildinfo
 .codex/
