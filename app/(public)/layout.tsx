@@ -43,6 +43,7 @@ export default async function PublicLayout({
         <div className="container site-footer__inner">
           <span>Coaching inquiries are reviewed before onboarding begins.</span>
           <span>Scheduling, billing, and check-ins are handled after intake.</span>
+          <span>© {new Date().getFullYear()} Ruffo Fitness</span>
         </div>
       </footer>
     </div>
