@@ -37,6 +37,7 @@ export default async function HomePage(props: { searchParams: SearchParams }) {
               <span className="pill">Goal-focused intake</span>
               <span className="pill">Direct follow-up</span>
               <span className="pill">No gimmicks</span>
+              <span className="pill">20+ years experience</span>
             </div>
 
             <div className="home-reveal home-reveal--delay-400" style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
