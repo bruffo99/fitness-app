@@ -408,7 +408,7 @@ th,
 
 .calendly-embed {
   position: relative;
-  min-height: 700px;
+  min-height: 900px;
 }
 
 .calendly-embed__widget {
@@ -416,7 +416,18 @@ th,
   z-index: 1;
   min-width: 0;
   width: 100%;
-  height: 700px;
+  height: 900px;
+}
+
+/* Calendly stacks vertically on narrow screens and needs more height */
+@media (max-width: 768px) {
+  .calendly-embed {
+    min-height: 1150px;
+  }
+
+  .calendly-embed__widget {
+    height: 1150px;
+  }
 }
 
 .calendly-embed__status {
