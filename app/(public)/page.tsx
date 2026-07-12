@@ -22,22 +22,23 @@ export default async function HomePage(props: { searchParams: SearchParams }) {
       <section className="hero">
         <div className="container hero__grid">
           <div className="card card--hero home-reveal home-reveal--delay-100">
-            <div className="hero__eyebrow home-reveal">Online coaching</div>
+            <div className="hero__eyebrow home-reveal">Coaching for professionals 40+</div>
             <p className="home-reveal home-reveal--delay-100" style={{ fontSize: "1.65rem", fontWeight: 700, letterSpacing: "0.01em", color: "var(--text-strong)", margin: "0 0 0.25rem", lineHeight: 1.2 }}>
-              Built <span className="accent">different.</span> Train with intent.
+              Past 40. Done guessing. <span className="accent">Built</span> to last.
             </p>
             <p className="hero__lead home-reveal home-reveal--delay-200">
-              Ruffo Fitness is for people who are done guessing. You get real structure,
-              direct feedback, and a plan built around your actual goal — fat loss,
-              body recomposition, or getting your discipline back. Start with the intake,
-              state the target, and the conversation starts without the usual fitness-industry nonsense.
+              Coaching for professionals over 40 who are done guessing and short on time.
+              You don&apos;t need more motivational noise — you need a system: real strength
+              and nutrition work that builds the body, plus the accountability to hold it
+              around a demanding job. I run my own training the way I run enterprise AI
+              programs by day — clear guardrails, weekly feedback loops, and no hype.
             </p>
             <div className="pill-row home-reveal home-reveal--delay-300">
-              <span className="pill">1:1 coaching inquiries</span>
-              <span className="pill">Goal-focused intake</span>
-              <span className="pill">Direct follow-up</span>
-              <span className="pill">No gimmicks</span>
-              <span className="pill">20+ years experience</span>
+              <span className="pill">Built for professionals 40+</span>
+              <span className="pill">Protein &amp; strength first</span>
+              <span className="pill">Evidence over hype</span>
+              <span className="pill">Weekly accountability</span>
+              <span className="pill">1:1 coaching</span>
             </div>
 
             <div className="home-reveal home-reveal--delay-400" style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -55,16 +56,16 @@ export default async function HomePage(props: { searchParams: SearchParams }) {
 
             <div className="hero__stats home-reveal home-reveal--delay-500" style={{ marginTop: "2rem" }}>
               <div className="hero__stat">
-                <span className="hero__stat-value">20+</span>
-                <span className="hero__stat-label">Years training</span>
+                <span className="hero__stat-value">100+</span>
+                <span className="hero__stat-label">Pounds lost, and kept off</span>
+              </div>
+              <div className="hero__stat">
+                <span className="hero__stat-value">40+</span>
+                <span className="hero__stat-label">Who this is built for</span>
               </div>
               <div className="hero__stat">
                 <span className="hero__stat-value">1:1</span>
-                <span className="hero__stat-label">Private coaching focus</span>
-              </div>
-              <div className="hero__stat">
-                <span className="hero__stat-value">Real</span>
-                <span className="hero__stat-label">Results over hype</span>
+                <span className="hero__stat-label">Private coaching</span>
               </div>
             </div>
           </div>
@@ -73,8 +74,9 @@ export default async function HomePage(props: { searchParams: SearchParams }) {
             <div className="section__eyebrow">What to expect</div>
             <div className="stack">
               <p className="muted">
-                The intake stays simple on purpose. You send the basics, Ruffo reviews
-                the lead, and qualified inquiries move into onboarding only after the
+                No forms for the sake of forms. You send the basics and where you&apos;re
+                actually stuck — strength, body composition, staying consistent around a
+                demanding schedule — and qualified inquiries move into coaching once the
                 fit is clear.
               </p>
               <ul className="list">
@@ -314,6 +316,28 @@ export default async function HomePage(props: { searchParams: SearchParams }) {
               The point is a strong first conversation, not a bloated portal pretending
               to be value. First comes clarity. Then comes execution.
             </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container" style={{ textAlign: "center" }}>
+          <div className="section__eyebrow home-reveal">The bottom line</div>
+          <h2 className="home-reveal home-reveal--delay-100">
+            <span className="accent">Now is the time.</span>
+          </h2>
+          <p className="home-reveal home-reveal--delay-200" style={{ maxWidth: "44rem", margin: "0 auto" }}>
+            Not January, not after the next quarter — now. Book the session and
+            let&apos;s get to work.
+          </p>
+          <div className="home-reveal home-reveal--delay-300" style={{ marginTop: "1.75rem" }}>
+            <Link
+              href="/booking"
+              className="button"
+              style={{ fontSize: "1.2rem", padding: "1.1rem 2.5rem", fontWeight: 700, letterSpacing: "0.02em", display: "inline-block" }}
+            >
+              Book a session — $150
+            </Link>
           </div>
         </div>
       </section>
