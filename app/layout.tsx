@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { siteConfig } from "@/lib/site";
 import { ToastProvider } from "@/app/components/Toast";
+import { Analytics } from "@/app/components/Analytics";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -69,6 +70,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
         />
         <ToastProvider>{children}</ToastProvider>
+        <Analytics />
       </body>
     </html>
   );

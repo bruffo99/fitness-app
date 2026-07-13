@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Script from "next/script";
+import { trackEvent } from "@/lib/analytics";
 
 const CALENDLY_SCRIPT_SRC = "https://assets.calendly.com/assets/external/widget.js";
+const CALENDLY_ORIGIN = "https://calendly.com";
 
 type CalendlyEmbedProps = {
   url: string;
@@ -53,6 +55,23 @@ export function CalendlyEmbed({ url }: CalendlyEmbedProps) {
     if (!scriptReady || initializedRef.current) return;
     initializeCalendly();
   }, [initializeCalendly, scriptReady]);
+
+  // Calendly runs inside an iframe, so a completed booking is invisible to
+  // analytics unless we listen for the widget's postMessage events.
+  useEffect(() => {
+    function handleCalendlyMessage(event: MessageEvent) {
+      if (event.origin !== CALENDLY_ORIGIN) return;
+      const name = (event.data as { event?: unknown } | null)?.event;
+      if (name === "calendly.date_and_time_selected") {
+        trackEvent("booking_started");
+      } else if (name === "calendly.event_scheduled") {
+        trackEvent("booking_completed", { value: 150, currency: "USD" });
+      }
+    }
+
+    window.addEventListener("message", handleCalendlyMessage);
+    return () => window.removeEventListener("message", handleCalendlyMessage);
+  }, []);
 
   return (
     <div className="calendly-embed">

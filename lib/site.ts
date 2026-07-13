@@ -7,6 +7,10 @@ export const siteConfig = {
   domain: "fitness.ruffo.ai",
   url: "https://fitness.ruffo.ai",
   ogImage: "/images/after.jpg",
+  // Google Analytics 4. Public by design — it ships in the page source.
+  // Empty string disables analytics entirely. Annotated `as string` so the
+  // surrounding `as const` doesn't narrow it to a literal type.
+  gaMeasurementId: "G-TXG2MPWMFG" as string,
   keywords: [
     "Ruffo Fitness",
     "online fitness coach",
