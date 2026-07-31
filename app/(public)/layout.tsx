@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getAdminSession } from "@/lib/auth";
+import { socialLinks } from "@/lib/social";
+import { SocialIcon } from "@/app/components/SocialIcon";
 
 export default async function PublicLayout({
   children
@@ -41,9 +43,25 @@ export default async function PublicLayout({
       <main>{children}</main>
       <footer className="site-footer">
         <div className="container site-footer__inner">
-          <span>Coaching inquiries are reviewed before onboarding begins.</span>
-          <span>Scheduling, billing, and check-ins are handled after intake.</span>
-          <span>© {new Date().getFullYear()} Ruffo Fitness</span>
+          <nav className="site-footer__social" aria-label="Social media">
+            {socialLinks.map((social) => (
+              <a
+                key={social.key}
+                href={social.url}
+                className="social-link"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Ruffo Fitness on ${social.label}`}
+              >
+                <SocialIcon platform={social.key} />
+              </a>
+            ))}
+          </nav>
+          <div className="site-footer__legal">
+            <span>Coaching inquiries are reviewed before onboarding begins.</span>
+            <span>Scheduling, billing, and check-ins are handled after intake.</span>
+            <span>© {new Date().getFullYear()} Ruffo Fitness</span>
+          </div>
         </div>
       </footer>
     </div>

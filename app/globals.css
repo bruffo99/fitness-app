@@ -1184,6 +1184,131 @@ tbody tr:hover {
 .site-footer__inner {
   padding-top: 1rem;
   font-size: 0.85rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.site-footer__social {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--muted);
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+.social-link:hover {
+  color: var(--accent);
+  border-color: var(--line-strong);
+  background: rgba(245, 158, 11, 0.08);
+  transform: translateY(-2px);
+}
+
+.site-footer__legal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+/* Link-in-bio page */
+.links-page {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+}
+
+.links-page__wrap {
+  max-width: 32rem;
+  width: 100%;
+  padding-top: 2.5rem;
+  padding-bottom: 3.5rem;
+}
+
+.links-page__head {
+  text-align: center;
+  margin-bottom: 2.25rem;
+}
+
+.links-page__brand {
+  font-size: 2rem;
+  display: block;
+}
+
+.links-page__tag {
+  color: var(--muted);
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.links-page__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 2.25rem;
+}
+
+.links-page__cta,
+.links-page__link {
+  width: 100%;
+  font-size: 1rem;
+  padding: 1.05rem 1.2rem;
+}
+
+.links-page__cta {
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+}
+
+.links-page__social {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+}
+
+.links-page__social-link {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+.links-page__social-link:hover {
+  border-color: var(--line-strong);
+  background: rgba(245, 158, 11, 0.08);
+  transform: translateY(-2px);
+}
+
+.links-page__social-icon {
+  color: var(--accent);
+  margin-bottom: 0.35rem;
+}
+
+.links-page__social-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.links-page__social-handle {
+  color: var(--muted);
+  font-size: 0.82rem;
 }
 
 @media (max-width: 980px) {
