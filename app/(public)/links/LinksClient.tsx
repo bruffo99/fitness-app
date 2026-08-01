@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { socialLinks } from "@/lib/social";
+import { affiliateProducts, affiliateDisclosure } from "@/lib/products";
 import { SocialIcon } from "@/app/components/SocialIcon";
 import { trackEvent } from "@/lib/analytics";
 
@@ -60,6 +61,37 @@ export function LinksClient() {
             </a>
           ))}
         </nav>
+
+        <section className="links-page__gear" aria-labelledby="gear-heading">
+          <h2 id="gear-heading" className="links-page__gear-heading">
+            Gear I use
+          </h2>
+          <p className="links-page__disclosure">{affiliateDisclosure}</p>
+          <div className="links-page__products">
+            {affiliateProducts.map((product) => (
+              <a
+                key={product.key}
+                href={product.url}
+                className="links-page__product"
+                target="_blank"
+                rel="noopener noreferrer nofollow sponsored"
+                onClick={() =>
+                  trackEvent("links_click", { destination: `product_${product.key}` })
+                }
+              >
+                <span className="links-page__product-info">
+                  <span className="links-page__product-name">{product.name}</span>
+                  {product.description ? (
+                    <span className="links-page__product-desc">{product.description}</span>
+                  ) : null}
+                </span>
+                <span className="links-page__product-cta" aria-hidden="true">
+                  View →
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
       </section>
     </div>
   );
