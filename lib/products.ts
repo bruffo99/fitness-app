@@ -25,6 +25,7 @@ export const affiliateProducts: AffiliateProduct[] = [
   },
 ];
 
-// Shown near the affiliate links to satisfy FTC disclosure requirements.
+// Shown near the affiliate links. Includes the exact phrase the Amazon
+// Associates program requires verbatim, which also satisfies the FTC.
 export const affiliateDisclosure =
-  "Some links below are affiliate links — I may earn a commission at no extra cost to you.";
+  "As an Amazon Associate I earn from qualifying purchases — at no extra cost to you.";
